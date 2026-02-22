@@ -4,6 +4,6 @@ public class Driver : MonoBehaviour, IDriver
 {
     public virtual Vector3 Move(float speed)
     {
-        return Vector3.zero;
+        return new Vector3(0, 0, speed);
     }
 }

@@ -4,12 +4,10 @@ using UnityEngine.InputSystem;
 public class Human : Driver
 {
     public float slowSpeed = 4.0f;
-    public float defaultSpeed = 6.0f;
     public float fastSpeed = 10.0f;
     public float lateralSpeed = 0.5f;
 
-
-    public override Vector3 Move(float speed)
+    public override Vector3 Move(float baseSpeed) // 'baseSpeed' parameter is defaultSpeed from MoveCar
     {
         var keyboard = Keyboard.current;
         if (keyboard == null)
@@ -17,31 +15,29 @@ public class Human : Driver
             return Vector3.zero;
         }
 
-        // Forward speed control. 'speed' parameter is the default speed.
-        float currentSpeed = speed;
+        float currentForwardSpeed = 0f;
 
         if (keyboard.wKey.isPressed)
         {
-            currentSpeed = this.fastSpeed;
+            currentForwardSpeed = this.fastSpeed; // Move forward at fast speed
         }
-
-        if (keyboard.sKey.isPressed)
+        else if (keyboard.sKey.isPressed)
         {
-            currentSpeed = this.slowSpeed;
+            currentForwardSpeed = -this.slowSpeed; // Move backward at slow speed
         }
 
-        // Sideways movement
         float lateralVelocity = 0f;
         if (keyboard.aKey.isPressed)
         {
-            lateralVelocity -= this.lateralSpeed * currentSpeed / speed;
+            // Lateral speed should be proportional to the absolute forward speed compared to the base speed
+            lateralVelocity -= this.lateralSpeed * Mathf.Abs(currentForwardSpeed) / baseSpeed;
         }
 
         if (keyboard.dKey.isPressed)
         {
-            lateralVelocity += this.lateralSpeed * currentSpeed / speed;
+            lateralVelocity += this.lateralSpeed * Mathf.Abs(currentForwardSpeed) / baseSpeed;
         }
 
-        return new Vector3(lateralVelocity, 0, currentSpeed);
+        return new Vector3(lateralVelocity, 0, currentForwardSpeed);
     }
 }
