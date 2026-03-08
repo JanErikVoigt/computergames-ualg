@@ -33,8 +33,12 @@ public class MoveCar : MonoBehaviour
         progress = -transform.position.z;
     }
 
-    void FixedUpdate()
+    void Update()
     {
+        if (fuelDisplay != null)
+        {
+            fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuel).ToString();
+        }
         if (driver == null) return;
 
         Vector3 moveVelocity = Vector3.zero;
@@ -60,13 +64,5 @@ public class MoveCar : MonoBehaviour
         }
 
         rb.MovePosition(new Vector3(-lateralOffset, rb.position.y, -progress));
-    }
-
-    void Update()
-    {
-        if (fuelDisplay != null)
-        {
-            fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuel).ToString();
-        }
     }
 }
