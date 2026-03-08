@@ -3,8 +3,8 @@ using UnityEngine.InputSystem;
 
 public class Human : MonoBehaviour, IDriver
 {
-    public float slowSpeed = 4.0f;
-    public float fastSpeed = 10.0f;
+    public float slowSpeed = 2.0f;
+    public float fastSpeed = 3.0f;
     public float lateralSpeed = 0.5f;
 
     private Vector2 moveInput;

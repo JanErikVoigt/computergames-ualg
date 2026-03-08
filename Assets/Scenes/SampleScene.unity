@@ -3703,7 +3703,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35302c4efa3d17f9e805af31982062f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AI
-  speed: 6
+  speed: 3
 --- !u!114 &1634088070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3717,7 +3717,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControlTruck
   steerIntensity: 20
-  defaultSpeed: 6
+  defaultSpeed: 4
   fuel: 100
   fuelConsumptionRate: 1
   truckFront: {fileID: 1279780021}
@@ -4434,6 +4434,7 @@ GameObject:
   - component: {fileID: 2086607171}
   - component: {fileID: 2086607173}
   - component: {fileID: 2086607172}
+  - component: {fileID: 2086607174}
   m_Layer: 0
   m_Name: HumanTruck
   m_TagString: Untagged
@@ -4490,8 +4491,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5d17bde139248fe4a00c76f38de0eb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Human
-  slowSpeed: 4
-  fastSpeed: 10
+  slowSpeed: 2
+  fastSpeed: 3
   lateralSpeed: 2
 --- !u!54 &2086607172
 Rigidbody:
@@ -4547,9 +4548,21 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: 
+  m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &2086607174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2086607168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5aa4a0ba0c817fab0b55c4b7a1221141, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Driver
 --- !u!4 &2092093249 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4491563562309374834, guid: 0654220d4895268b484eadc3ef297a83, type: 3}
