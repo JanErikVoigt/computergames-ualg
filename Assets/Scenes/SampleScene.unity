@@ -3118,7 +3118,7 @@ MonoBehaviour:
   whatToSpawn: {fileID: 914057974}
   delay: 1
   initial_balls: 5
-  initialBallsParent: {fileID: 2078918343}
+  ballsParent: {fileID: 2078918343}
   spawnArea: {x: 10, y: 0, z: 10}
 --- !u!1001 &1187240885
 PrefabInstance:
