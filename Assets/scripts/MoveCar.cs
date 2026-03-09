@@ -20,6 +20,7 @@ public class MoveCar : MonoBehaviour
     private Rigidbody rb;
     private float progress;
     private float lateralOffset;
+    private int hits = 0;
 
     void Awake()
     {
@@ -64,5 +65,19 @@ public class MoveCar : MonoBehaviour
         }
 
         rb.MovePosition(new Vector3(-lateralOffset, rb.position.y, -progress));
+    }
+
+    private void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Increment hits if collided with a ball or another vehicle
+        if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
+        {
+            hits++;
+        }
     }
 }
