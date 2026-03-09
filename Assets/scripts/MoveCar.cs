@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(Driver))]
 [RequireComponent(typeof(Rigidbody))]
@@ -18,8 +17,6 @@ public class MoveCar : MonoBehaviour
 
     private IDriver driver;
     private Rigidbody rb;
-    private float progress;
-    private float lateralOffset;
     private int hits = 0;
 
     void Awake()
@@ -28,18 +25,16 @@ public class MoveCar : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    void Start()
-    {
-        lateralOffset = -transform.position.x;
-        progress = -transform.position.z;
-    }
-
     void Update()
     {
         if (fuelDisplay != null)
         {
             fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuel).ToString();
         }
+    }
+
+    void FixedUpdate()
+    {
         if (driver == null) return;
 
         Vector3 moveVelocity = Vector3.zero;
@@ -56,15 +51,12 @@ public class MoveCar : MonoBehaviour
         float lateralVelocity = moveVelocity.x;
         float speed = moveVelocity.z;
 
-        lateralOffset += Time.fixedDeltaTime * lateralVelocity;
-        progress += Time.fixedDeltaTime * speed;
+        rb.velocity = new Vector3(-lateralVelocity, rb.velocity.y, -speed);
 
         if (truckFront != null)
         {
             truckFront.localRotation = Quaternion.Euler(0f, 90f + lateralVelocity * steerIntensity, 0f);
         }
-
-        rb.MovePosition(new Vector3(-lateralOffset, rb.position.y, -progress));
     }
 
     private void OnGUI()
@@ -74,7 +66,6 @@ public class MoveCar : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Increment hits if collided with a ball or another vehicle
         if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
         {
             hits++;
