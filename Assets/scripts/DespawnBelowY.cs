@@ -7,6 +7,9 @@ public class DespawnBelowY : MonoBehaviour
     void Update()
     {
         if (transform.position.y < threshold)
+        {
+            enabled = false;
             Destroy(gameObject);
+        }
     }
 }
