@@ -3118,6 +3118,7 @@ MonoBehaviour:
   whatToSpawn: {fileID: 914057974}
   delay: 1
   initial_balls: 5
+  initialBallsParent: {fileID: 2078918343}
   spawnArea: {x: 10, y: 0, z: 10}
 --- !u!1001 &1187240885
 PrefabInstance:
@@ -4963,7 +4964,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2078918343}
   m_Layer: 0
-  m_Name: initial_balls
+  m_Name: balls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

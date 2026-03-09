@@ -51,7 +51,7 @@ public class MoveCar : MonoBehaviour
         float lateralVelocity = moveVelocity.x;
         float speed = moveVelocity.z;
 
-        rb.velocity = new Vector3(-lateralVelocity, rb.velocity.y, -speed);
+        rb.linearVelocity = new Vector3(-lateralVelocity, rb.linearVelocity.y, -speed);
 
         if (truckFront != null)
         {
