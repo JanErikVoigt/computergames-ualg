@@ -15,14 +15,18 @@ public class MoveCar : MonoBehaviour
     public TextMeshProUGUI fuelDisplay;
     public string textPrefix;
 
+    [SerializeField] private float alignSpeed = 5f;
+
     private IDriver driver;
     private Rigidbody rb;
+    private Quaternion initialRotation;
     private int hits = 0;
 
     void Awake()
     {
         driver = GetComponent<IDriver>();
         rb = GetComponent<Rigidbody>();
+        initialRotation = transform.rotation;
     }
 
     void Update()
@@ -52,6 +56,7 @@ public class MoveCar : MonoBehaviour
         float speed = moveVelocity.z;
 
         rb.linearVelocity = new Vector3(-lateralVelocity, rb.linearVelocity.y, -speed);
+        rb.MoveRotation(Quaternion.Slerp(rb.rotation, initialRotation, alignSpeed * Time.fixedDeltaTime));
 
         if (truckFront != null)
         {
