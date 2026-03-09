@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(Driver))]
 [RequireComponent(typeof(Rigidbody))]
@@ -17,10 +16,11 @@ public class MoveCar : MonoBehaviour
     public TextMeshProUGUI fuelDisplay;
     public string textPrefix;
 
+    [SerializeField] private float alignSpeed = 5f;
+
     private IDriver driver;
     private Rigidbody rb;
-    private float progress;
-    private float lateralOffset;
+    private Quaternion initialRotation;
     private int hits = 0;
     private bool hasLanded = true;
 
@@ -28,12 +28,7 @@ public class MoveCar : MonoBehaviour
     {
         driver = GetComponent<IDriver>();
         rb = GetComponent<Rigidbody>();
-    }
-
-    void Start()
-    {
-        lateralOffset = -transform.position.x;
-        progress = -transform.position.z;
+        initialRotation = transform.rotation;
 
         if (moveOnlyAfterLanding)
         {
@@ -54,10 +49,6 @@ public class MoveCar : MonoBehaviour
         }
         if (driver == null || !hasLanded) return;
 
-        // Sync internal state with physics in case we were pushed or moved by gravity/slopes
-        lateralOffset = -rb.position.x;
-        progress = -rb.position.z;
-
         Vector3 moveVelocity = Vector3.zero;
 
         if (fuel > 0)
@@ -72,15 +63,13 @@ public class MoveCar : MonoBehaviour
         float lateralVelocity = moveVelocity.x;
         float speed = moveVelocity.z;
 
-        lateralOffset += Time.deltaTime * lateralVelocity;
-        progress += Time.deltaTime * speed;
+        rb.linearVelocity = new Vector3(-lateralVelocity, rb.linearVelocity.y, -speed);
+        rb.MoveRotation(Quaternion.Slerp(rb.rotation, initialRotation, alignSpeed * Time.deltaTime));
 
         if (truckFront != null)
         {
             truckFront.localRotation = Quaternion.Euler(0f, 90f + lateralVelocity * steerIntensity, 0f);
         }
-
-        rb.MovePosition(new Vector3(-lateralOffset, rb.position.y, -progress));
     }
 
     private void OnGUI()
@@ -88,5 +77,11 @@ public class MoveCar : MonoBehaviour
         GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
     }
 
-
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
+        {
+            hits++;
+        }
+    }
 }
