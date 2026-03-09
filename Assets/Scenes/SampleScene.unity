@@ -2374,6 +2374,57 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 991245516}
   m_CullTransparentMesh: 1
+--- !u!1 &1038638224
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1038638226}
+  - component: {fileID: 1038638225}
+  m_Layer: 0
+  m_Name: VehiclesSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1038638225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038638224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ce8d9b4826a23c49b7671f0a9f011ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VehiclesSpawner
+  vehicles:
+  - {fileID: 5219565215719097150, guid: 56b0731eb634f9742be79659df319fcd, type: 3}
+  - {fileID: 3962937539555667642, guid: bfa7d89939a9fdd4093e23126ba50a5d, type: 3}
+  - {fileID: 5376550721982098625, guid: eb2db90d528532c4f9d2dc7cca629d8c, type: 3}
+  - {fileID: 1995465520885135533, guid: b593e99f7d76d7240a9d60d9cf602b04, type: 3}
+  topLeftPos: {x: 30, y: 28, z: -50}
+  bottomRightPos: {x: 20, y: 15, z: 50}
+--- !u!4 &1038638226
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1038638224}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 32.13193, y: 7.38741, z: 124.74975}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1098577276 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4491563562309374834, guid: 0654220d4895268b484eadc3ef297a83, type: 3}
@@ -3720,6 +3771,7 @@ MonoBehaviour:
   defaultSpeed: 4
   fuel: 100
   fuelConsumptionRate: 1
+  moveOnlyAfterLanding: 0
   truckFront: {fileID: 1279780021}
   fuelDisplay: {fileID: 991245518}
   textPrefix: AI
@@ -4473,9 +4525,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControlTruck
   steerIntensity: 20
-  defaultSpeed: 6
+  defaultSpeed: 10
   fuel: 100
   fuelConsumptionRate: 1
+  moveOnlyAfterLanding: 0
   truckFront: {fileID: 1697372229}
   fuelDisplay: {fileID: 1443019189}
   textPrefix: Human
@@ -4492,7 +4545,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Human
   slowSpeed: 2
-  fastSpeed: 3
+  fastSpeed: 8
   lateralSpeed: 2
 --- !u!54 &2086607172
 Rigidbody:
@@ -4640,3 +4693,4 @@ SceneRoots:
   - {fileID: 1211513086}
   - {fileID: 2078918343}
   - {fileID: 406435832}
+  - {fileID: 1038638226}

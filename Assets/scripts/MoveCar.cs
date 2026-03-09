@@ -11,6 +11,7 @@ public class MoveCar : MonoBehaviour
     public float defaultSpeed = 6.0f;
     public float fuel = 100f;
     public float fuelConsumptionRate = 1f;
+    public bool moveOnlyAfterLanding = false;
 
     [SerializeField] private Transform truckFront;
     public TextMeshProUGUI fuelDisplay;
@@ -21,6 +22,7 @@ public class MoveCar : MonoBehaviour
     private float progress;
     private float lateralOffset;
     private int hits = 0;
+    private bool hasLanded = true;
 
     void Awake()
     {
@@ -32,6 +34,16 @@ public class MoveCar : MonoBehaviour
     {
         lateralOffset = -transform.position.x;
         progress = -transform.position.z;
+
+        if (moveOnlyAfterLanding)
+        {
+            hasLanded = false;
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+            }
+        }
     }
 
     void Update()
@@ -40,7 +52,11 @@ public class MoveCar : MonoBehaviour
         {
             fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuel).ToString();
         }
-        if (driver == null) return;
+        if (driver == null || !hasLanded) return;
+
+        // Sync internal state with physics in case we were pushed or moved by gravity/slopes
+        lateralOffset = -rb.position.x;
+        progress = -rb.position.z;
 
         Vector3 moveVelocity = Vector3.zero;
 
@@ -48,7 +64,7 @@ public class MoveCar : MonoBehaviour
         {
             moveVelocity = driver.Move(defaultSpeed);
 
-            float fuelConsumed = (moveVelocity.magnitude / defaultSpeed) * fuelConsumptionRate * Time.fixedDeltaTime;
+            float fuelConsumed = (moveVelocity.magnitude / defaultSpeed) * fuelConsumptionRate * Time.deltaTime;
             fuel -= fuelConsumed;
             if (fuel < 0) fuel = 0;
         }
@@ -56,8 +72,8 @@ public class MoveCar : MonoBehaviour
         float lateralVelocity = moveVelocity.x;
         float speed = moveVelocity.z;
 
-        lateralOffset += Time.fixedDeltaTime * lateralVelocity;
-        progress += Time.fixedDeltaTime * speed;
+        lateralOffset += Time.deltaTime * lateralVelocity;
+        progress += Time.deltaTime * speed;
 
         if (truckFront != null)
         {
@@ -72,12 +88,5 @@ public class MoveCar : MonoBehaviour
         GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Increment hits if collided with a ball or another vehicle
-        if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
-        {
-            hits++;
-        }
-    }
+
 }
