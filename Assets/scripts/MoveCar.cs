@@ -77,11 +77,11 @@ public class MoveCar : MonoBehaviour
         GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
-        {
-            hits++;
-        }
-    }
+    // private void OnCollisionEnter(Collision collision)
+    // {
+    //     if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
+    //     {
+    //         hits++;
+    //     }
+    // }
 }
