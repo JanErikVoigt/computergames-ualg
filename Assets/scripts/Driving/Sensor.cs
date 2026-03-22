@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Sensor : MonoBehaviour
+public class Sensor : MonoBehaviour, ISensor
 {
     public string targetTag = "Player";
     public float detectionInterval = 0.1f;
