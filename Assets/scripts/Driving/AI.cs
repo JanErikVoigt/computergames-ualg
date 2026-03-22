@@ -2,10 +2,9 @@ using UnityEngine;
 
 public class AI : Driver
 {
-    public float speed = 6.0f;
-
-    public override Vector3 Move(float speed)
+    public override Vector3 Move(float baseSpeed)
     {
-        return new Vector3(0, 0, this.speed);
+        // Simple default forward movement
+        return new Vector3(0, 0, baseSpeed);
     }
 }

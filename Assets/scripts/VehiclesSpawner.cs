@@ -56,12 +56,15 @@ void SpawnUp()
         
         // rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
+        Sensor sensorScript = vehicle.AddComponent<Sensor>(); 
+        NPCMovement npcMovement = vehicle.AddComponent<NPCMovement>();
 
         MoveCar moveScript = vehicle.AddComponent<MoveCar>();
         if (moveScript != null) {
             moveScript.defaultSpeed = speed;
             moveScript.moveOnlyAfterLanding = true;
-            moveScript.fuel = 999999f; 
+
+            IFuel fuelSystem = vehicle.AddComponent<InfiniteFuel>();
         }
     }
 }

@@ -8,8 +8,6 @@ public class MoveCar : MonoBehaviour
     public float steerIntensity = 10.0f;
 
     public float defaultSpeed = 6.0f;
-    public float fuel = 100f;
-    public float fuelConsumptionRate = 1f;
     public bool moveOnlyAfterLanding = false;
 
     [SerializeField] private Transform truckFront;
@@ -19,14 +17,15 @@ public class MoveCar : MonoBehaviour
     [SerializeField] private float alignSpeed = 5f;
 
     private IDriver driver;
+    private IFuel fuelSource;
     private Rigidbody rb;
     private Quaternion initialRotation;
-    private int hits = 0;
     private bool hasLanded = true;
 
     void Awake()
     {
         driver = GetComponent<IDriver>();
+        fuelSource = GetComponent<IFuel>();
         rb = GetComponent<Rigidbody>();
         initialRotation = transform.rotation;
 
@@ -45,19 +44,30 @@ public class MoveCar : MonoBehaviour
     {
         if (fuelDisplay != null)
         {
-            fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuel).ToString();
+            if (fuelSource != null)
+            {
+                fuelDisplay.text = $"{textPrefix} Fuel: " + Mathf.Max(0, (int)fuelSource.CurrentFuel).ToString();
+            }
+            else
+            {
+                fuelDisplay.text = $"{textPrefix} No Fuel System";
+            }
         }
         if (driver == null || !hasLanded) return;
 
         Vector3 moveVelocity = Vector3.zero;
 
-        if (fuel > 0)
+        bool hasFuel = fuelSource == null || fuelSource.HasFuel();
+
+        if (hasFuel)
         {
             moveVelocity = driver.Move(defaultSpeed);
 
-            float fuelConsumed = (moveVelocity.magnitude / defaultSpeed) * fuelConsumptionRate * Time.deltaTime;
-            fuel -= fuelConsumed;
-            if (fuel < 0) fuel = 0;
+            if (fuelSource != null)
+            {
+                float normalizedMovement = moveVelocity.magnitude / defaultSpeed;
+                fuelSource.Consume(normalizedMovement);
+            }
         }
 
         float lateralVelocity = moveVelocity.x;
@@ -71,17 +81,4 @@ public class MoveCar : MonoBehaviour
             truckFront.localRotation = Quaternion.Euler(0f, 90f + lateralVelocity * steerIntensity, 0f);
         }
     }
-
-    private void OnGUI()
-    {
-        GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
-    }
-
-    // private void OnCollisionEnter(Collision collision)
-    // {
-    //     if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
-    //     {
-    //         hits++;
-    //     }
-    // }
 }
