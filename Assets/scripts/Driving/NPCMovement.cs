@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Sensor))]
-public class NPCMovement : MonoBehaviour, IDriver
+public class NPCMovement : Driver
 {
     public float followDistance = 10.0f;
 
@@ -16,7 +16,7 @@ public class NPCMovement : MonoBehaviour, IDriver
         humanTruck = Object.FindObjectOfType<Human>();
     }
 
-    public Vector3 Move(float baseSpeed)
+    public override Vector3 Move(float baseSpeed)
     {
         if (sensor == null)
         {

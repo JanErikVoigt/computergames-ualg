@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Human : MonoBehaviour, IDriver
+public class Human : Driver
 {
     public float slowSpeed = 2.0f;
     public float fastSpeed = 3.0f;
@@ -14,7 +14,7 @@ public class Human : MonoBehaviour, IDriver
         moveInput = value.Get<Vector2>();
     }
 
-    public Vector3 Move(float baseSpeed)
+    public override Vector3 Move(float baseSpeed)
     {
         float currentForwardSpeed = 0f;
 
