@@ -8,7 +8,7 @@ public class BallSpawner : MonoBehaviour
     public int initial_balls=5;
     public Transform ballsParent;
 
-    public Vector3 spawnArea = new Vector3(10,0,10);
+    public Vector3 spawnArea = new Vector3(10,10,10);
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,6 +24,12 @@ public class BallSpawner : MonoBehaviour
 
     void SpawnBall()
     {
+        if (whatToSpawn == null)
+        {
+            CancelInvoke("SpawnBall");
+            return;
+        }
+        
         Vector3 spawnOffset = new Vector3(
             Random.Range(-spawnArea.x/2f,spawnArea.x/2f),
             Random.Range(-spawnArea.y/2f,spawnArea.y/2f),
