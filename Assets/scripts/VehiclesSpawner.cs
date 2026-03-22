@@ -57,5 +57,6 @@ void SpawnUp()
             moveScript.moveOnlyAfterLanding = true;
             moveScript.fuel = 999999f; 
         }
+        Sensor sensorscript = vehicle.AddComponent<Sensor>(); //TODO configure, if needed
     }
 }
