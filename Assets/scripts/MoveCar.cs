@@ -21,7 +21,6 @@ public class MoveCar : MonoBehaviour
     private IDriver driver;
     private Rigidbody rb;
     private Quaternion initialRotation;
-    private int hits = 0;
     private bool hasLanded = true;
 
     void Awake()
@@ -71,17 +70,4 @@ public class MoveCar : MonoBehaviour
             truckFront.localRotation = Quaternion.Euler(0f, 90f + lateralVelocity * steerIntensity, 0f);
         }
     }
-
-    private void OnGUI()
-    {
-        GUI.Label(new Rect(10, 10, 100, 20), "hits: " + hits);
-    }
-
-    // private void OnCollisionEnter(Collision collision)
-    // {
-    //     if (collision.gameObject.CompareTag("Ball") || collision.gameObject.name.Contains("Ball") || collision.gameObject.name.Contains("Bus") || collision.gameObject.name.Contains("Car") || collision.gameObject.name.Contains("Police"))
-    //     {
-    //         hits++;
-    //     }
-    // }
 }
