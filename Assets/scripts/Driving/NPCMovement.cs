@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class NPCMovement : Driver
+[RequireComponent(typeof(Sensor))]
+public class NPCMovement : MonoBehaviour, IDriver
 {
     public float followDistance = 10.0f;
 
@@ -15,7 +16,7 @@ public class NPCMovement : Driver
         humanTruck = Object.FindObjectOfType<Human>();
     }
 
-    public override Vector3 Move(float baseSpeed)
+    public Vector3 Move(float baseSpeed)
     {
         if (sensor == null)
         {
@@ -28,7 +29,6 @@ public class NPCMovement : Driver
             humanTruck = Object.FindObjectOfType<Human>();
             if (humanTruck == null) return new Vector3(0, 0, baseSpeed);
         }
-
         // Initialize strategy if not set (initial state: maintain normal direction)
         if (currentStrategy == null)
         {
@@ -41,7 +41,7 @@ public class NPCMovement : Driver
         // Strategy switching logic
         if (distance > 0 && distance <= followDistance)
         {
-            if (!(currentStrategy is FollowTargetStrategy))
+            if (currentStrategy is not FollowTargetStrategy)
             {
                 currentStrategy = new FollowTargetStrategy();
             }
@@ -49,14 +49,14 @@ public class NPCMovement : Driver
         else
         {
             // When leaving range, maintain the last movement vector calculated while in range
-            if (!(currentStrategy is MaintainDirectionStrategy))
+            if (currentStrategy is not MaintainDirectionStrategy)
             {
                 currentStrategy = new MaintainDirectionStrategy(lastMovement);
             }
         }
 
         Vector3 move = currentStrategy.GetMovement(transform.position, humanTruck.transform, baseSpeed);
-        
+
         // Update lastMovement if we are currently following, so it's ready when we leave range
         if (currentStrategy is FollowTargetStrategy)
         {

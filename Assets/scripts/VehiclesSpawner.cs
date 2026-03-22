@@ -58,13 +58,12 @@ void SpawnUp()
 
         Sensor sensorScript = vehicle.AddComponent<Sensor>(); 
         NPCMovement npcMovement = vehicle.AddComponent<NPCMovement>();
+        IFuel fuelSystem = vehicle.AddComponent<InfiniteFuel>();
 
         MoveCar moveScript = vehicle.AddComponent<MoveCar>();
         if (moveScript != null) {
             moveScript.defaultSpeed = speed;
             moveScript.moveOnlyAfterLanding = true;
-
-            IFuel fuelSystem = vehicle.AddComponent<InfiniteFuel>();
         }
     }
 }
