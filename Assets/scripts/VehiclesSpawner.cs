@@ -8,6 +8,9 @@ public class VehiclesSpawner : MonoBehaviour
     public Vector3 topLeftPos;      // Top of the slope
     public Vector3 bottomRightPos;  // Bottom of the slope
 
+    [Header("Despawn Settings")]
+    public float despawnYThreshold = -50f;
+
     void Start()
     {
         InvokeRepeating("SpawnDown", 5f, 5f);
@@ -42,6 +45,9 @@ void SpawnUp()
         int v = Random.Range(0, vehicles.Length);
         GameObject vehicle = Instantiate(vehicles[v], pos, rot);
         
+        DespawnBelowY despawnScript = vehicle.AddComponent<DespawnBelowY>();
+        despawnScript.threshold = despawnYThreshold;
+
         // Rigidbody rb = vehicle.GetComponent<Rigidbody>();
         // if (rb == null) rb = vehicle.AddComponent<Rigidbody>();
         

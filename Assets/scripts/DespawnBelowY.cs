@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DespawnBelowY : MonoBehaviour
 {
-    public float threshold = -10f;
+    public float threshold = 8f;
 
     void Update()
     {
