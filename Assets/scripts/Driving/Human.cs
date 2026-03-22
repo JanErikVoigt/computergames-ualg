@@ -33,13 +33,12 @@ public class Human : Driver
         // A key pressed (left)
         if (moveInput.x < -0.5f)
         {
-            // Lateral speed should be proportional to the absolute forward speed compared to the base speed
-            lateralVelocity -= this.lateralSpeed * Mathf.Abs(currentForwardSpeed) / baseSpeed;
+            lateralVelocity = -this.lateralSpeed;
         }
         // D key pressed (right)
-        if (moveInput.x > 0.5f)
+        else if (moveInput.x > 0.5f)
         {
-            lateralVelocity += this.lateralSpeed * Mathf.Abs(currentForwardSpeed) / baseSpeed;
+            lateralVelocity = this.lateralSpeed;
         }
 
         return new Vector3(lateralVelocity, 0, currentForwardSpeed);
