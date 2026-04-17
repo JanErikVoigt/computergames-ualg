@@ -1,0 +1,14 @@
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/bin/Debug/net10.0/Mancuna
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/bin/Debug/net10.0/Mancuna.deps.json
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/bin/Debug/net10.0/Mancuna.runtimeconfig.json
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/bin/Debug/net10.0/Mancuna.dll
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/bin/Debug/net10.0/Mancuna.pdb
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.GeneratedMSBuildEditorConfig.editorconfig
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.AssemblyInfoInputs.cache
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.AssemblyInfo.cs
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.csproj.CoreCompileInputs.cache
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.dll
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/refint/Mancuna.dll
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.pdb
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/Mancuna.genruntimeconfig.cache
+/storage/OneDrive-ualg/Works/Aulas/00-Disciplinas/01-Novas/CGames/Code/Mancuna/Mancuna/obj/Debug/net10.0/ref/Mancuna.dll

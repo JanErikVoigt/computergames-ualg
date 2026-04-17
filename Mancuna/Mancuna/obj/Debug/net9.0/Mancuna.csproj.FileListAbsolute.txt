@@ -1,0 +1,15 @@
+/home/alex/computergames-ualg/Mancuna/Mancuna/bin/Debug/net9.0/Mancuna
+/home/alex/computergames-ualg/Mancuna/Mancuna/bin/Debug/net9.0/Mancuna.deps.json
+/home/alex/computergames-ualg/Mancuna/Mancuna/bin/Debug/net9.0/Mancuna.runtimeconfig.json
+/home/alex/computergames-ualg/Mancuna/Mancuna/bin/Debug/net9.0/Mancuna.dll
+/home/alex/computergames-ualg/Mancuna/Mancuna/bin/Debug/net9.0/Mancuna.pdb
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.GeneratedMSBuildEditorConfig.editorconfig
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.AssemblyInfoInputs.cache
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.AssemblyInfo.cs
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.csproj.CoreCompileInputs.cache
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.sourcelink.json
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.dll
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/refint/Mancuna.dll
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.pdb
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/Mancuna.genruntimeconfig.cache
+/home/alex/computergames-ualg/Mancuna/Mancuna/obj/Debug/net9.0/ref/Mancuna.dll
