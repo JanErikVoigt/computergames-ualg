@@ -26,7 +26,6 @@ public class PlayerMancuna : Player
         if (actions.Count == 1) return actions[0];
         if (actions.Count == 0) return -1; // Should not happen
 
-        // UPGRADE 2: Iterative Deepening Loop
         for (int currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++)
         {
             int bestActionThisDepth = -1;
@@ -34,12 +33,8 @@ public class PlayerMancuna : Player
             double beta = double.PositiveInfinity;
             double v = double.NegativeInfinity;
 
-            // Move Ordering: Put the best action from the previous depth iteration FIRST
-            // OrderMoves(ref children, ref actions, overallBestAction);
-
             for (int i = 0; i < children.Count; i++)
             {
-                // Notice we pass currentDepth - 1 because we already took 1 step by generating children
                 double res = MinValue(children[i], alpha, beta, currentDepth - 1, 1);
                 if (res > v)
                 {
@@ -61,24 +56,6 @@ public class PlayerMancuna : Player
         return overallBestAction;
     }
 
-    // Helper method to swap the known best move to index 0
-    private void OrderMoves(ref List<IBoard> children, ref List<int> actions, int bestAction)
-    {
-        if (bestAction == -1) return;
-
-        int index = actions.IndexOf(bestAction);
-        if (index > 0)
-        {
-            int tempAction = actions[0];
-            actions[0] = actions[index];
-            actions[index] = tempAction;
-
-            IBoard tempBoard = children[0];
-            children[0] = children[index];
-            children[index] = tempBoard;
-        }
-    }
-
     private double MaxValue(IBoard board, double alpha, double beta, int remainingDepth, int ply = 0)
     {
         int winner = board.winner();
@@ -87,7 +64,6 @@ public class PlayerMancuna : Player
 
         int key = (board.hash() << 1) | 0;
 
-        // 1. CACHE LOOKUP WITH BOUNDS
         if (memo.TryGetValue(key, out var cached))
         {
             if (cached.Depth >= remainingDepth)
@@ -95,9 +71,9 @@ public class PlayerMancuna : Player
                 if (cached.Flag == HashFlag.Exact)
                     return cached.Value;
                 if (cached.Flag == HashFlag.LowerBound && cached.Value >= beta)
-                    return cached.Value; // The true value is >= cached, which is >= beta. Cutoff!
+                    return cached.Value;
                 if (cached.Flag == HashFlag.UpperBound && cached.Value <= alpha)
-                    return cached.Value; // The true value is <= cached, which is <= alpha. Cutoff!
+                    return cached.Value;
             }
         }
 
@@ -121,7 +97,6 @@ public class PlayerMancuna : Player
             alpha = Math.Max(alpha, v);
         }
 
-        // 2. CACHE STORAGE
         // If 'v' never exceeded our original alpha, this node failed to improve our position,
         // meaning 'v' is just an Upper Bound of the true score.
         if (v < 9000 && v > -9000)
@@ -141,7 +116,6 @@ public class PlayerMancuna : Player
 
         int key = (board.hash() << 1) | 1;
 
-        // 1. CACHE LOOKUP WITH BOUNDS
         if (memo.TryGetValue(key, out var cached))
         {
             if (cached.Depth >= remainingDepth)
@@ -175,7 +149,6 @@ public class PlayerMancuna : Player
             beta = Math.Min(beta, v);
         }
 
-        // 2. CACHE STORAGE
         // If 'v' never dipped below our original beta, this node failed to improve the opponent's position,
         // meaning 'v' is just a Lower Bound of the true score.
         if (v < 9000 && v > -9000)
@@ -189,7 +162,7 @@ public class PlayerMancuna : Player
 
     private double Evaluate(IBoard board, int winner, int ply)
     {
-        if (winner == (int)GameEnd.Tie) return 0;      // This MUST be checked first
+        if (winner == (int)GameEnd.Tie) return 0;
         if (winner == _position) return 10000.0 - ply; // Win faster
         if (winner >= 0) return -10000.0 + ply;        // Lose slower
 
