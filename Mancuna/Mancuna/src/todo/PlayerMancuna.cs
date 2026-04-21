@@ -3,17 +3,22 @@ using System.Collections.Generic;
 
 public class PlayerMancuna : Player
 {
-    private const int MAX_DEPTH = 32;
+    private enum HashFlag
+    {
+        Exact,
+        LowerBound, // We know the score is AT LEAST this value (Beta Cutoff)
+        UpperBound  // We know the score is AT MOST this value (All children failed to raise Alpha)
+    }
+    private const int MAX_DEPTH = 12;
 
-    // UPGRADE 1: The dictionary now stores a Tuple of (Value, Depth)
-    // If a hash collision occurs, we at least know how "deep" the cached calculation was.
-    private Dictionary<int, (double Value, int Depth)> memo = new();
+    // The dictionary now stores a Tuple of (Value, Depth, Flag)
+    private Dictionary<int, (double Value, int Depth, HashFlag Flag)> memo = new();
 
     public PlayerMancuna(string name, int pos) : base(name, pos) { }
 
     public override int play(IBoard board)
     {
-        memo.Clear();
+        // memo.Clear();
         int overallBestAction = -1;
 
         (List<IBoard> children, List<int> actions) = board.children();
@@ -30,12 +35,12 @@ public class PlayerMancuna : Player
             double v = double.NegativeInfinity;
 
             // Move Ordering: Put the best action from the previous depth iteration FIRST
-            OrderMoves(ref children, ref actions, overallBestAction);
+            // OrderMoves(ref children, ref actions, overallBestAction);
 
             for (int i = 0; i < children.Count; i++)
             {
                 // Notice we pass currentDepth - 1 because we already took 1 step by generating children
-                double res = MinValue(children[i], alpha, beta, currentDepth - 1);
+                double res = MinValue(children[i], alpha, beta, currentDepth - 1, 1);
                 if (res > v)
                 {
                     v = res;
@@ -47,8 +52,7 @@ public class PlayerMancuna : Player
             overallBestAction = bestActionThisDepth != -1 ? bestActionThisDepth : actions[0];
 
             // Early Exit: If the AI finds a forced win, stop searching deeper.
-            // This prevents it from overthinking and tripping on a hash collision at depth 32.
-            if (v >= 9000 || v <= -9000)
+            if (v >= 9000)
             {
                 break;
             }
@@ -75,81 +79,120 @@ public class PlayerMancuna : Player
         }
     }
 
-    private double MaxValue(IBoard board, double alpha, double beta, int remainingDepth)
+    private double MaxValue(IBoard board, double alpha, double beta, int remainingDepth, int ply = 0)
     {
         int winner = board.winner();
-        if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, remainingDepth);
-        if (remainingDepth <= 0) return Evaluate(board, winner, remainingDepth);
+        if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, ply);
+        if (remainingDepth <= 0) return Evaluate(board, winner, ply);
 
         int key = (board.hash() << 1) | 0;
 
-        // UPGRADE 3: Depth-Stamped Cache Check
+        // 1. CACHE LOOKUP WITH BOUNDS
         if (memo.TryGetValue(key, out var cached))
         {
-            // Only trust the cache if it was searched to at least the depth we need right now.
-            // This protects you from using shallow hash collisions to override deep thinking.
-            if (cached.Depth >= remainingDepth) return cached.Value;
+            if (cached.Depth >= remainingDepth)
+            {
+                if (cached.Flag == HashFlag.Exact)
+                    return cached.Value;
+                if (cached.Flag == HashFlag.LowerBound && cached.Value >= beta)
+                    return cached.Value; // The true value is >= cached, which is >= beta. Cutoff!
+                if (cached.Flag == HashFlag.UpperBound && cached.Value <= alpha)
+                    return cached.Value; // The true value is <= cached, which is <= alpha. Cutoff!
+            }
         }
 
+        double originalAlpha = alpha; // Remember the original alpha to determine the flag later
         double v = double.NegativeInfinity;
         (List<IBoard> children, _) = board.children();
 
         foreach (var child in children)
         {
-            v = Math.Max(v, MinValue(child, alpha, beta, remainingDepth - 1));
+            v = Math.Max(v, MinValue(child, alpha, beta, remainingDepth - 1, ply + 1));
+
+            // Beta Cutoff
             if (v >= beta)
             {
-                memo[key] = (v, remainingDepth);
+                if (v < 9000 && v > -9000)
+                {
+                    memo[key] = (v, remainingDepth, HashFlag.LowerBound);
+                }
                 return v;
             }
             alpha = Math.Max(alpha, v);
         }
 
-        memo[key] = (v, remainingDepth);
+        // 2. CACHE STORAGE
+        // If 'v' never exceeded our original alpha, this node failed to improve our position,
+        // meaning 'v' is just an Upper Bound of the true score.
+        if (v < 9000 && v > -9000)
+        {
+            HashFlag flag = (v > originalAlpha) ? HashFlag.Exact : HashFlag.UpperBound;
+            memo[key] = (v, remainingDepth, flag);
+        }
+
         return v;
     }
 
-    private double MinValue(IBoard board, double alpha, double beta, int remainingDepth)
+    private double MinValue(IBoard board, double alpha, double beta, int remainingDepth, int ply = 0)
     {
         int winner = board.winner();
-        if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, remainingDepth);
-        if (remainingDepth <= 0) return Evaluate(board, winner, remainingDepth);
+        if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, ply);
+        if (remainingDepth <= 0) return Evaluate(board, winner, ply);
 
         int key = (board.hash() << 1) | 1;
 
+        // 1. CACHE LOOKUP WITH BOUNDS
         if (memo.TryGetValue(key, out var cached))
         {
-            if (cached.Depth >= remainingDepth) return cached.Value;
+            if (cached.Depth >= remainingDepth)
+            {
+                if (cached.Flag == HashFlag.Exact)
+                    return cached.Value;
+                if (cached.Flag == HashFlag.LowerBound && cached.Value >= beta)
+                    return cached.Value;
+                if (cached.Flag == HashFlag.UpperBound && cached.Value <= alpha)
+                    return cached.Value;
+            }
         }
 
+        double originalBeta = beta; // Remember the original beta to determine the flag later
         double v = double.PositiveInfinity;
         (List<IBoard> children, _) = board.children();
 
         foreach (var child in children)
         {
-            v = Math.Min(v, MaxValue(child, alpha, beta, remainingDepth - 1));
+            v = Math.Min(v, MaxValue(child, alpha, beta, remainingDepth - 1, ply + 1));
+
+            // Alpha Cutoff
             if (v <= alpha)
             {
-                memo[key] = (v, remainingDepth);
+                if (v < 9000 && v > -9000)
+                {
+                    memo[key] = (v, remainingDepth, HashFlag.UpperBound);
+                }
                 return v;
             }
             beta = Math.Min(beta, v);
         }
 
-        memo[key] = (v, remainingDepth);
+        // 2. CACHE STORAGE
+        // If 'v' never dipped below our original beta, this node failed to improve the opponent's position,
+        // meaning 'v' is just a Lower Bound of the true score.
+        if (v < 9000 && v > -9000)
+        {
+            HashFlag flag = (v < originalBeta) ? HashFlag.Exact : HashFlag.LowerBound;
+            memo[key] = (v, remainingDepth, flag);
+        }
+
         return v;
     }
 
-    private double Evaluate(IBoard board, int winner, int remainingDepth)
+    private double Evaluate(IBoard board, int winner, int ply)
     {
-        // UPGRADE 4: Horizon Effect Fix
-        // By adding 'remainingDepth' to a win, the AI prefers to win in 2 moves (+10030) 
-        // rather than winning in 30 moves (+10002).
-        if (winner == _position) return 10000.0 + remainingDepth;
-        if (winner >= 0) return -10000.0 - remainingDepth;
-        if (winner == (int)GameEnd.Tie) return 0;
+        if (winner == (int)GameEnd.Tie) return 0;      // This MUST be checked first
+        if (winner == _position) return 10000.0 - ply; // Win faster
+        if (winner >= 0) return -10000.0 + ply;        // Lose slower
 
-        // Keep your tweaked heuristic here
         return (board.score(_position) - board.score(1 - _position)) * 10;
     }
 }
