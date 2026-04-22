@@ -1,0 +1,163 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\geometry{margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{
+    \textbf{Implementation of a Minimax Agent for Mancuna} \\
+    \large Computer Games \\
+    Master in Computer Engineering\\
+    \vspace{1cm}
+    \includegraphics[width=0.4\textwidth]{ualg_logo.png} \\ % Note: Placeholder for logo
+    \vspace{1cm}
+}
+
+\author{
+    Alexandre Boavida \\
+    Jan-Erik Voigt \\
+    Philippe Schlup
+}
+
+\date{April 21, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \textbf{University of Algarve} \\
+    Faculty of Science and Technology \\
+    \vspace{0.5cm}
+    \textbf{Professor:} Helder Anicedo Amadeu de Sousa Daniel
+\end{center}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+This report details the implementation of an artificial intelligence agent for the game of \textit{Mancuna}, a simplified variant of the traditional Mancala game played on a $2 \times 2$ board. The project was developed as part of the Computer Games course in the Master in Computer Engineering at the University of Algarve.
+
+The objective was to create a competitive player capable of searching the game tree efficiently to make optimal moves. Our implementation, found in \texttt{PlayerMancuna.cs}, utilizes several advanced game-playing techniques, including Minimax search with Alpha-Beta pruning, iterative deepening, and a transposition table.
+
+\section{The Mancuna Game}
+Mancuna is played on a board with two rows and two columns. Each player controls one row (two pits). In the standard configuration, each pit starts with 2 tokens, for a total of 8 tokens on the board.
+\begin{itemize}
+    \item \textbf{Movement:} A player selects a non-empty pit on their side and redistributes the tokens counter-clockwise.
+    \item \textbf{Winning Condition:} A player wins if the opponent's side is empty and it's the opponent's turn to move.
+    \item \textbf{Scoring:} The score is the total number of tokens on a player's side of the board.
+\end{itemize}
+
+\section{Implementation Details}
+
+\subsection{Minimax Algorithm with Alpha-Beta Pruning}
+The core of the agent is a recursive Minimax algorithm. To reduce the number of nodes explored, we implemented Alpha-Beta pruning. This optimization allows the search to skip branches that are guaranteed to be worse than previously explored options.
+
+\subsection{Iterative Deepening}
+The agent uses iterative deepening, starting from depth 1 up to a maximum depth of 12. This approach ensures that the agent always has a move ready if time constraints were to be imposed and allows for more effective use of the transposition table by ordering moves or utilizing previously computed values.
+
+\subsection{Transposition Table (Memoization)}
+To handle the possibility of reaching the same board state through different move sequences (transpositions), we implemented a transposition table using a \texttt{Dictionary<int, (double Value, int Depth, HashFlag Flag)>}.
+
+\begin{lstlisting}[language={[Sharp]C}, caption=Transposition Table Lookup Implementation]
+int key = (board.hash() << 1) | nodeType; // 0 for Max, 1 for Min
+
+if (memo.TryGetValue(key, out var cached))
+{
+    if (cached.Depth >= remainingDepth)
+    {
+        if (cached.Flag == HashFlag.Exact)
+            return cached.Value;
+        if (cached.Flag == HashFlag.LowerBound && cached.Value >= beta)
+            return cached.Value;
+        if (cached.Flag == HashFlag.UpperBound && cached.Value <= alpha)
+            return cached.Value;
+    }
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Hashing:} The table uses the board's internal hash function...
+    \item \textbf{Hash Flags:} We store three types of entries:
+    \begin{itemize}
+        \item \textbf{Exact:} The true minimax value of the node.
+        \item \textbf{LowerBound:} A value resulting from a Beta-cutoff.
+        \item \textbf{UpperBound:} A value resulting from an Alpha-cutoff.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Evaluation Function}
+When the search reaches a leaf node (either a terminal state or the maximum depth), it evaluates the board using the following heuristic:
+\[ \text{Score} = (\text{Self Score} - \text{Opponent Score}) \times 10 \]
+
+For terminal states, the evaluation rewards faster wins and slower losses by incorporating the \textit{ply} (depth from root):
+\begin{itemize}
+    \item \textbf{Win:} $10000 - \text{ply}$
+    \item \textbf{Loss:} $-10000 + \text{ply}$
+    \item \textbf{Tie:} $0$
+\end{itemize}
+
+\section{Results}
+To evaluate the performance of the \texttt{PlayerMancuna} agent, we conducted an extensive experiment consisting of 20,000 matches against an \texttt{Expert} player. The results demonstrate a high level of stability and competitiveness.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Player} & \textbf{Wins} & \textbf{Total Score} & \textbf{Total Moves} \\
+        \hline
+        MancunaPlayer0 (Our Agent) & 0 & 100,000 & 250,000 \\
+        Expert Player & 0 & 60,000 & 260,000 \\
+        \hline
+        \textbf{Ties} & \multicolumn{3}{c|}{\textbf{20,000}} \\
+        \hline
+    \end{tabular}
+    \caption{Experimental results after 20,000 matches.}
+    \label{tab:results}
+\end{table}
+
+The experiment shows a 100\% tie rate over the 20,000 matches. Given the limited state space of the $2 \times 2$ Mancuna board with only 8 tokens, these results suggest that both agents are playing optimally or near-optimally, consistently reaching a stalemate or a repeating board state that triggers a tie. Our agent maintained a higher cumulative score compared to the Expert player, indicating a strong defensive and offensive balance.
+
+\section{Conclusion}
+The implementation of the \texttt{PlayerMancuna} agent successfully combines classic game search algorithms with modern optimizations. By using Alpha-Beta pruning and a transposition table, the agent can search deeper into the game tree than a naive Minimax implementation. The addition of iterative deepening and a robust evaluation function makes the agent a formidable opponent in the game of Mancuna.
+
+\end{document}

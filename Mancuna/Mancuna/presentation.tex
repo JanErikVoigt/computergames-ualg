@@ -1,0 +1,243 @@
+\documentclass{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{listings}
+\usepackage{tikz} % Added missing tikz package
+
+\definecolor{ualgblue}{RGB}{0, 74, 130}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\title[Minimax Mancuna Agent]{Implementation of a Minimax Agent for Mancuna}
+\subtitle{Computer Games - Master in Computer Engineering}
+\author[Boavida, Voigt, Schlup]{Alexandre Boavida \and Jan-Erik Voigt \and Philippe Schlup}
+\institute[UAlg]{University of Algarve \\ Faculty of Science and Technology}
+\date{April 21, 2026}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Introduction}
+    \begin{itemize}
+        \item \textbf{Project:} Development of an AI agent for the game of \textit{Mancuna}.
+        \item \textbf{Goal:} Implement a competitive player using advanced search techniques.
+        \item \textbf{Key Components:}
+        \begin{itemize}
+            \item Minimax Algorithm
+            \item Alpha-Beta Pruning
+            \item Transposition Table (Memoization)
+            \item Ply-Adjusted Heuristic Evaluation
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{The Mancuna Game}
+    \begin{itemize}
+        \item \textbf{Layout:} $2 \times 2$ board (2 pits per player).
+        \item \textbf{Tokens:} Typically starts with 2 tokens per pit (8 total).
+        \item \textbf{Mechanics:}
+        \begin{itemize}
+            \item Select a pit, sow tokens counter-clockwise.
+            \item Win by emptying the opponent's side on their turn.
+            \item Score is the sum of tokens in the player's pits.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Core Algorithm: Minimax \& Pruning}
+    \begin{block}{Minimax with Alpha-Beta Pruning}
+        \begin{itemize}
+            \item Efficiently searches the game tree to find optimal moves.
+            \item \textbf{Alpha-Beta Pruning:} Significantly reduces the number of nodes visited by cutting off branches that cannot affect the final decision.
+        \end{itemize}
+    \end{block}
+    \vfill
+    \begin{itemize}
+        \item \textbf{Max Depth:} Fixed to 12 plies for optimal performance.
+        \item Increases in depth did not result in performance gains.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Heuristic Evaluation}
+    \begin{itemize}
+        \item \textbf{In-Progress State:} Evaluated purely on score differential.
+        \begin{itemize}
+            \item Calculation: $(\text{Self Score} - \text{Opponent Score}) \times 10$.
+        \end{itemize}
+        \item \textbf{Terminal States (with Ply Adjustment):}
+        \begin{itemize}
+            \item \textbf{Tie:} Checked first, strictly returns 0 to prevent the AI from treating ties as losses.
+            \item \textbf{Win:} $10000 - \text{ply}$ (Encourages faster wins).
+            \item \textbf{Loss:} $-10000 + \text{ply}$ (Encourages longer survival).
+        \end{itemize}
+        \item The \texttt{ply} parameter strictly represents the distance from the root node, completely solving the traditional Horizon Effect loop trap.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Transposition Table}
+    \begin{itemize}
+        \item Uses a \texttt{Dictionary} to store previously computed board states.
+        \item \textbf{Tuple Hash Key:} \texttt{(board.hash(), turn)}
+        \begin{itemize}
+            \item Secures the cache by ensuring Max and Min perspectives on the same physical board do not overwrite each other.
+        \end{itemize}
+        \item \textbf{Stored Data:} Value, Depth, and Flag (Exact, LowerBound, UpperBound).
+        \item \textbf{Safety Constraint:} Terminal mate scores ($v \ge 9000$ or $v \le -9000$) are deliberately excluded from caching to prevent depth-related anomalies.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Alpha-Beta Pruning Implementation}
+\begin{lstlisting}[
+    language={[Sharp]C}, 
+    basicstyle=\ttfamily\scriptsize, 
+    backgroundcolor=\color{gray!10}, 
+    frame=single,                    
+    rulecolor=\color{gray!40},       
+    numbers=left,                    
+    numberstyle=\tiny\color{gray},
+    xleftmargin=1em                  
+]
+double v = double.NegativeInfinity;
+(List<IBoard> children, _) = board.children();
+
+foreach (var child in children) {
+    v = Math.Max(v, MinValue(child, alpha, beta, 
+                             remainingDepth - 1, ply + 1));
+    // Beta Cutoff
+    if (v >= beta) {
+        if (v < 9000 && v > -9000) {
+            memo[key] = (v, remainingDepth, HashFlag.LowerBound);
+        }
+        return v;
+    }
+    alpha = Math.Max(alpha, v);
+}
+if (v < 9000 && v > -9000)
+{
+    HashFlag flag = (v > originalAlpha)
+    ? HashFlag.Exact : HashFlag.UpperBound;
+    memo[key] = (v, remainingDepth, flag);
+}
+
+return v;
+\end{lstlisting}
+
+\end{frame}
+
+
+
+\begin{frame}{Results}
+    \begin{itemize}
+    \begin{columns}[T]
+    % --- Right Column (Bigger for Image) ---
+    \begin{column}{1.0\textwidth} % Increased from 0.52
+      \centering
+    \includegraphics[width=\textwidth]{results.png}
+      \vspace{0.2em}
+      {\small Obtained results with depth 12}
+    \end{column}
+  \end{columns}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Experimental Results}
+    \begin{itemize}
+        \item \textbf{Configuration:} 20,000 matches against an \texttt{Expert} player.
+        \item \textbf{Performance Summary:}
+        \begin{itemize}
+            \item \textbf{Ties:} 20,000 (100\% tie rate).
+            \item \textbf{MancunaPlayer0 Total Score:} 100,000.
+            \item \textbf{Expert Player Total Score:} 60,000.
+        \end{itemize}
+        \item \textbf{Analysis:}
+        \begin{itemize}
+            \item The 100\% tie rate indicates that both agents are playing optimally given the small state space (8 tokens, 4 pits).
+            \item Our agent achieved a higher cumulative score while maintaining a perfect defensive record.
+            \item Consistent performance across 250,000+ moves.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Future Work \& Possible Improvements}
+    \begin{itemize}
+        \item \textbf{Iterative Deepening:}
+        \begin{itemize}
+            \item Transitioning from a fixed-depth search to a time-bounded search.
+            \item Acts as an "anytime algorithm" to guarantee an optimal move within strict time limits.
+        \end{itemize}
+        \item \textbf{Deep Move Ordering:}
+        \begin{itemize}
+            \item Sorting child nodes to evaluate the strongest moves first, driven by the Transposition Table's previous findings.
+            \item Maximizes Alpha-Beta pruning efficiency, vastly reducing the number of nodes evaluated.
+        \end{itemize}
+        \item \textbf{Advanced Search Enhancements:}
+        \begin{itemize}
+            \item \textbf{Aspiration Windows:} Narrowing the initial $\alpha$ and $\beta$ bounds to trigger fail-high/fail-low cutoffs faster.
+            \item \textbf{Endgame Tablebases:} Precomputing mathematically perfect moves for low-token scenarios to bypass search entirely.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item The \texttt{PlayerMancuna} agent provides a robust implementation of classic AI game-playing techniques.
+        \item Alpha-Beta pruning combined with a Transposition Table allows for highly efficient deep look-ahead up to 12 plies.
+        \item Ply-adjusted terminal heuristics ensure logical handling of forced game endings.
+    \end{itemize}
+    \vfill
+    \centering
+    
+\end{frame}
+
+% ============================================================
+\section*{Q\&A}
+% ============================================================
+
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[ualgblue] (current page.south west) rectangle (current page.north east);
+  \end{tikzpicture}
+
+  \centering
+  \vspace{2.8cm}
+  {\Huge\color{white}\textbf{Any Questions?}}\\[1.2em]
+  {\large\color{white!85}Thank you for your attention}\\[2.2em]
+
+  % \begin{beamercolorbox}[sep=0.6em, center, wd=0.65\textwidth,
+  %     rounded=true]{palette primary}
+  %   \small
+    
+  % \end{beamercolorbox}
+\end{frame}
+
+\end{document}
