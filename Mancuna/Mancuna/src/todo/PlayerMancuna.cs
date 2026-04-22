@@ -9,50 +9,37 @@ public class PlayerMancuna : Player
         LowerBound, // We know the score is AT LEAST this value (Beta Cutoff)
         UpperBound  // We know the score is AT MOST this value (All children failed to raise Alpha)
     }
+
     private const int MAX_DEPTH = 12;
 
-    // The dictionary now stores a Tuple of (Value, Depth, Flag)
-    private Dictionary<int, (double Value, int Depth, HashFlag Flag)> memo = new();
+    private readonly Dictionary<(int Hash, int Turn), (double Value, int Depth, HashFlag Flag)> memo = [];
 
     public PlayerMancuna(string name, int pos) : base(name, pos) { }
 
     public override int play(IBoard board)
     {
-        // memo.Clear();
-        int overallBestAction = -1;
-
         (List<IBoard> children, List<int> actions) = board.children();
 
         if (actions.Count == 1) return actions[0];
         if (actions.Count == 0) return -1; // Should not happen
 
-        for (int currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++)
+        int bestActionThisDepth = -1;
+        double alpha = double.NegativeInfinity;
+        double beta = double.PositiveInfinity;
+        double v = double.NegativeInfinity;
+
+        for (int i = 0; i < children.Count; i++)
         {
-            int bestActionThisDepth = -1;
-            double alpha = double.NegativeInfinity;
-            double beta = double.PositiveInfinity;
-            double v = double.NegativeInfinity;
-
-            for (int i = 0; i < children.Count; i++)
+            double res = MinValue(children[i], alpha, beta, MAX_DEPTH - 1, 1);
+            if (res > v)
             {
-                double res = MinValue(children[i], alpha, beta, currentDepth - 1, 1);
-                if (res > v)
-                {
-                    v = res;
-                    bestActionThisDepth = actions[i];
-                }
-                alpha = Math.Max(alpha, v);
+                v = res;
+                bestActionThisDepth = actions[i];
             }
-
-            overallBestAction = bestActionThisDepth != -1 ? bestActionThisDepth : actions[0];
-
-            // Early Exit: If the AI finds a forced win, stop searching deeper.
-            if (v >= 9000)
-            {
-                break;
-            }
+            alpha = Math.Max(alpha, v);
         }
 
+        int overallBestAction = bestActionThisDepth != -1 ? bestActionThisDepth : actions[0];
         return overallBestAction;
     }
 
@@ -62,7 +49,8 @@ public class PlayerMancuna : Player
         if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, ply);
         if (remainingDepth <= 0) return Evaluate(board, winner, ply);
 
-        int key = (board.hash() << 1) | 0;
+        // '0' at the end flags this as Max's turn
+        var key = (board.hash(), 0);
 
         if (memo.TryGetValue(key, out var cached))
         {
@@ -114,7 +102,8 @@ public class PlayerMancuna : Player
         if (winner != (int)GameEnd.InProgress) return Evaluate(board, winner, ply);
         if (remainingDepth <= 0) return Evaluate(board, winner, ply);
 
-        int key = (board.hash() << 1) | 1;
+        // '1' at the end flags this as Min's turn
+        var key = (board.hash(), 1);
 
         if (memo.TryGetValue(key, out var cached))
         {
