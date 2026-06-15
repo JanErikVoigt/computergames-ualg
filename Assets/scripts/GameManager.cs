@@ -14,6 +14,13 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI scoreText;
 
+     [Header("Player Scripts")]
+    public HumanPlayer humanHunterScript;
+    public MachinePlayer machineHunterScript;
+    
+    public HumanPlayer humanRunnerScript;
+    public MachinePlayer machineRunnerScript;
+
     [Header("Characters & Camera")]
     public CameraFollow cameraController; 
     public Transform hunterTransform;     
@@ -51,25 +58,38 @@ public class GameManager : MonoBehaviour
         StartRound();
     }
 
-    // NEW: Handles the setup at the start of every single round
     private void StartRound()
     {
         isGameActive = true;
         roundText.text = "Round " + currentRound + " / 5";
 
-        // --- THE CAMERA SNAPPING LOGIC ---
         if (isHumanHunter)
         {
+            // Human is the Hunter
             cameraController.target = hunterTransform;
-            // TODO: Turn ON human controls for Hunter, turn ON AI for Runner
+            
+            humanHunterScript.isCurrentlyActive = true;
+            humanHunterScript.isHunter = true;
+            machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
+
+            // Machine is the Runner
+            humanRunnerScript.isCurrentlyActive = false; // Turn human off on Runner
+            machineRunnerScript.ActivateAI(false);       // Turn AI on as Runner
         }
         else
         {
+            // Human is the Runner
             cameraController.target = runnerTransform;
-            // TODO: Turn ON human controls for Runner, turn ON AI for Hunter
+            
+            humanRunnerScript.isCurrentlyActive = true;
+            humanRunnerScript.isHunter = false;
+            machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
+
+            // Machine is the Hunter
+            humanHunterScript.isCurrentlyActive = false; // Turn human off on Hunter
+            machineHunterScript.ActivateAI(true);        // Turn AI on as Hunter
         }
     }
-
     // NEW: Call this function when the timer hits 0 or the Hunter catches the Runner
     public void EndRound(bool didHumanWinRound)
     {

@@ -6,22 +6,22 @@ public class CameraFollow : MonoBehaviour
     public Transform target; 
     
     [Header("Camera Settings")]
-    public Vector3 offset = new Vector3(0, 15, -15); 
+    public float distanceBehind = 6f; // How far back the camera sits
+    public float heightAbove = 3f;    // How high up the camera sits
     public float smoothSpeed = 5f; 
 
     void LateUpdate()
     {
         if (target != null)
         {
-            // Calculate where the camera should be
-            Vector3 desiredPosition = target.position + offset;
+            // Calculate a position behind and above the target based on its current rotation
+            Vector3 desiredPosition = target.position - (target.forward * distanceBehind) + (Vector3.up * heightAbove);
             
-            // Smoothly slide the camera to that position
+            // Smoothly move the camera
             transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
 
-            // --- THE FIX ---
-            // This forces the camera to angle downwards and stare directly at the player
-            transform.LookAt(target); 
+            // Always look directly at the target
+            transform.LookAt(target);
         }
     }
 }
