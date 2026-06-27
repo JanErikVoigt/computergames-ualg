@@ -1,0 +1,27 @@
+# Unity ML-Agents Hunter vs. Runner Game Implementation Plan
+
+Project Overview: A classic pursuit-evasion scenario using Unity ML-Agents. This plan outlines a simple and effective method to implement a 1v1 arena game where a human player and a trained machine player swap roles across 5 rounds.
+
+## 1. Assets: Map and Characters •
+
+It is best to avoid complex maps initially. Starting with simple geometric shapes ensures clean physics interactions and simplifies the learning process for the AI. The Arena: Create a flat Plane in Unity and border it with four scaled-up Cubes to act as walls. This keeps the physics simple and prevents agents from falling off the edge. • • • • • • The Characters: Use a red Capsule for the Hunter and a blue Capsule for the Runner. Add a simple block to the "face" of the capsules so it is easy to tell which direction they are looking. Enhancing Visuals: Once the logic is flawless, it is easy to replace these primitive shapes with free 3D models from the Unity Asset Store (search for "Starter Assets" or "Free Low Poly Characters").
+
+## 2. The Game Page (UI)
+
+The user interface should be handled through a simple Unity Canvas layer, displaying critical game state information: Round Tracker: Text displaying the current round (e.g., "Round 1 / 5"). Timer: Text counting down from 30 seconds. Scoreboard: Text showing Human Wins vs. Machine Wins. End Screen: A panel that activates when a player reaches 3 wins, displaying the victor and a "Restart Game" button.
+
+## 3. Game Flow (The Game Manager)
+
+A central • GameManager C# script is required to enforce the rules. It handles the core loop: The Timer: Use • Time.deltaTime to count down from 30. Win Conditions: If the Hunter collides with the Runner (detected via point. If the timer reaches 0, the Runner scores a point. OnCollisionEnter ), the Hunter scores a Role Swapping: When a round ends, the manager resets both characters to opposite sides of the arena. It then swaps the control schemes—assigning the human inputs to the character that was just the machine, and activating the ML-Agent behavior on the other.
+
+## 3. Machine Player Setup (ML-Agents)
+
+The machine needs to understand two entirely different objectives. The cleanest method is to train two separate neural networks (one for Hunting, one for Running) and swap the active model based on the current round. Components needed on the Machine character: • • • Behavior Parameters : Defines the neural network model it should use. Decision Requester : Prompts the AI to make a move every few frames. Ray Perception Sensor 3D : Acts as the agent's vision. It casts invisible rays forward to detect objects tagged as "Wall" or "Opponent". The Agent Script (C#) Create a script that inherits from the • • Agent class: CollectObservations() : The agent must be fed data about its current velocity, the direction of the opponent, and the distance to the opponent. OnActionReceived() : This function translates the AI's numerical decisions into actual physical movement (applying force to the Rigidbody to move and turn). • ◦ Rewards System: As Hunter: Grant penalty ( +1.0 reward and call EndEpisode() upon catching the Runner. Apply a tiny-0.001 ) every step to encourage catching the Runner quickly.As Runner: Grant a tiny reward (+0.001) every step it survives, and +1.0 if the timer hits 0.
+
+## 4. Machine Player Setup (ML-Agents)
+
+The machine needs to understand two entirely different objectives. The cleanest method is to train two separate neural networks (one for Hunting, one for Running) and swap the active model based on the current round. Components needed on the Machine character: • • • Behavior Parameters : Defines the neural network model it should use. Decision Requester : Prompts the AI to make a move every few frames. Ray Perception Sensor 3D : Acts as the agent's vision. It casts invisible rays forward to detect objects tagged as "Wall" or "Opponent". The Agent Script (C#) Create a script that inherits from the • • Agent class: CollectObservations() : The agent must be fed data about its current velocity, the direction of the opponent, and the distance to the opponent. OnActionReceived() : This function translates the AI's numerical decisions into actual physical movement (applying force to the Rigidbody to move and turn). • ◦ Rewards System: As Hunter: Grant penalty ( +1.0 reward and call EndEpisode() upon catching the Runner. Apply a tiny-0.001 ) every step to encourage catching the Runner quickly.As Runner: Grant a tiny reward (+0.001) every step it survives, and +1.0 if the timer hits 0.
+
+## 5. Training the Machine
+
+The most effective way to train a pursuit-evasion game is through Self-Play. Instead of playing against the machine manually for hours, let it learn by fighting itself. Training Scene: Create a copy of the arena and place two ML-Agents inside—one set as the Hunter, one as the Runner. Configuration: Create a .yaml configuration file and enable the ML-Agents self_play parameter. This forces the two AI brains to continually adapt to each other's strategies. Execution: Run the mlagents-learn command in the terminal and press Play in Unity. It will run the game at maximum speed, simulating thousands of 30-second rounds in minutes. Integration: Once training is complete, it will generate .onnx neural network files. Simply drag these files into the Unity project and plug them into the Behavior Parameters of the machine player for the actual game.

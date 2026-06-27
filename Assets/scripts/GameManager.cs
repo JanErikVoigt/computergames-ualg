@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     [Header("Menu Panels")]
     public GameObject startScreenPanel; 
     public GameObject endScreenPanel;
@@ -14,7 +16,10 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI scoreText;
 
-     [Header("Player Scripts")]
+    [Header("End Screen Elements")]
+    public TextMeshProUGUI victorText;
+
+    [Header("Player Scripts")]
     public HumanPlayer humanHunterScript;
     public MachinePlayer machineHunterScript;
     
@@ -36,8 +41,41 @@ public class GameManager : MonoBehaviour
     // NEW: Tracks whose turn it is to be the Hunter
     private bool isHumanHunter = true; 
 
+    // Character starting states for resetting
+    private Vector3 hunterStartPos;
+    private Quaternion hunterStartRot;
+    private Vector3 runnerStartPos;
+    private Quaternion runnerStartRot;
+
+    // Timer state
+    private float timer = 30f; 
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
+        // Record character initial spawn positions and rotations
+        if (hunterTransform != null)
+        {
+            hunterStartPos = hunterTransform.position;
+            hunterStartRot = hunterTransform.rotation;
+        }
+        if (runnerTransform != null)
+        {
+            runnerStartPos = runnerTransform.position;
+            runnerStartRot = runnerTransform.rotation;
+        }
+
         startScreenPanel.SetActive(true);
         hudPanel.SetActive(false);
         endScreenPanel.SetActive(false);
@@ -54,6 +92,7 @@ public class GameManager : MonoBehaviour
         machineWins = 0;
         isHumanHunter = true; // Human starts as Hunter in Round 1
         
+        ResetCharacters();
         UpdateScoreBoard();
         StartRound();
     }
@@ -61,6 +100,8 @@ public class GameManager : MonoBehaviour
     private void StartRound()
     {
         isGameActive = true;
+        timer = 30f; // Reset timer to 30s for the new round
+        UpdateTimerText();
         roundText.text = "Round " + currentRound + " / 5";
 
         if (isHumanHunter)
@@ -119,7 +160,8 @@ public class GameManager : MonoBehaviour
             // This flips the roles: If it was true, it becomes false. If false, it becomes true.
             isHumanHunter = !isHumanHunter; 
             
-            // TODO: Reset capsule positions back to their starting corners here
+            // Reset capsule positions back to their starting corners
+            ResetCharacters();
             
             StartRound();
         }
@@ -129,6 +171,22 @@ public class GameManager : MonoBehaviour
     {
         hudPanel.SetActive(false);
         endScreenPanel.SetActive(true);
+
+        if (victorText != null)
+        {
+            if (humanWins > machineWins)
+            {
+                victorText.text = "Human Wins the Game!";
+            }
+            else if (machineWins > humanWins)
+            {
+                victorText.text = "Machine Wins the Game!";
+            }
+            else
+            {
+                victorText.text = "It's a Tie!";
+            }
+        }
     }
 
     public void RestartGame()
@@ -143,11 +201,68 @@ public class GameManager : MonoBehaviour
         scoreText.text = "Human: " + humanWins + " | Machine: " + machineWins;
     }
 
+    private void UpdateTimerText()
+    {
+        if (timerText != null)
+        {
+            timerText.text = "Time: " + timer.ToString("F1") + "s";
+        }
+    }
+
+    // Call this from HunterCollision when Hunter catches Runner
+    public void OnHunterCaughtRunner()
+    {
+        if (!isGameActive) return;
+
+        // Hunter caught Runner, so Hunter wins round.
+        // If human is Hunter, human wins round. Otherwise machine wins.
+        EndRound(isHumanHunter);
+    }
+
+    private void ResetCharacters()
+    {
+        // Reset Hunter capsule
+        if (hunterTransform != null)
+        {
+            hunterTransform.position = hunterStartPos;
+            hunterTransform.rotation = hunterStartRot;
+            if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
+            {
+                hunterRb.linearVelocity = Vector3.zero;
+                hunterRb.angularVelocity = Vector3.zero;
+            }
+        }
+
+        // Reset Runner capsule
+        if (runnerTransform != null)
+        {
+            runnerTransform.position = runnerStartPos;
+            runnerTransform.rotation = runnerStartRot;
+            if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
+            {
+                runnerRb.linearVelocity = Vector3.zero;
+                runnerRb.angularVelocity = Vector3.zero;
+            }
+        }
+    }
+
     void Update()
     {
         if (isGameActive)
         {
-            // Timer countdown logic goes here...
+            timer -= Time.deltaTime;
+            if (timer <= 0f)
+            {
+                timer = 0f;
+                UpdateTimerText();
+                // Runner wins round (Time out).
+                // If human is Runner (not isHumanHunter), human wins. Otherwise machine wins.
+                EndRound(!isHumanHunter);
+            }
+            else
+            {
+                UpdateTimerText();
+            }
         }
     }
 }

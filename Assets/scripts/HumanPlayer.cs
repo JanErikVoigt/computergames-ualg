@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 public class HumanPlayer : MonoBehaviour
@@ -12,6 +13,7 @@ public class HumanPlayer : MonoBehaviour
     public bool isHunter = false; // True = Hunter, False = Runner
 
     private Rigidbody rb;
+    private Vector2 rawInput = Vector2.zero;
     private float moveInput;
     private float turnInput;
 
@@ -20,13 +22,29 @@ public class HumanPlayer : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
+
+    /// <summary>
+    /// Callback sent by the PlayerInput component when a Move action is triggered.
+    /// Requires the PlayerInput behavior to be set to "Send Messages" or "Broadcast Messages".
+    /// </summary>
+    public void OnMove(InputValue value)
+    {
+        rawInput = value.Get<Vector2>();
+    }
+
     void Update()
     {
         if (isCurrentlyActive)
         {
-            // NEW: Using GetAxisRaw completely eliminates tiny phantom stick drift
-            moveInput = Input.GetAxisRaw("Vertical");   
-            turnInput = Input.GetAxisRaw("Horizontal"); 
+            // Apply standard stick deadzone in code just in case the action map lacks one
+            Vector2 processedInput = rawInput;
+            if (processedInput.magnitude <= 0.15f)
+            {
+                processedInput = Vector2.zero;
+            }
+
+            moveInput = processedInput.y;
+            turnInput = processedInput.x;
         }
         else
         {
