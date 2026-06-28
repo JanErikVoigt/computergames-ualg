@@ -20,6 +20,8 @@ public class HumanPlayer : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        // Freeze rotation to prevent physics forces from tilting or spinning the capsule
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
 
@@ -36,7 +38,6 @@ public class HumanPlayer : MonoBehaviour
     {
         if (isCurrentlyActive)
         {
-            // Apply standard stick deadzone in code just in case the action map lacks one
             Vector2 processedInput = rawInput;
             if (processedInput.magnitude <= 0.15f)
             {
