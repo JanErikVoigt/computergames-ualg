@@ -64,21 +64,26 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Record character initial spawn positions and rotations
-        if (hunterTransform != null)
-        {
-            hunterStartPos = hunterTransform.position;
-            hunterStartRot = hunterTransform.rotation;
-        }
-        if (runnerTransform != null)
-        {
-            runnerStartPos = runnerTransform.position;
-            runnerStartRot = runnerTransform.rotation;
-        }
+        // Record initial states...
+        if (hunterTransform != null) { hunterStartPos = hunterTransform.position; hunterStartRot = hunterTransform.rotation; }
+        if (runnerTransform != null) { runnerStartPos = runnerTransform.position; runnerStartRot = runnerTransform.rotation; }
 
-        startScreenPanel.SetActive(true);
-        hudPanel.SetActive(false);
-        endScreenPanel.SetActive(false);
+        if (isTrainingMode)
+        {
+            // Hide menus completely and jump straight into the loop
+            if (startScreenPanel != null) startScreenPanel.SetActive(false);
+            if (hudPanel != null) hudPanel.SetActive(true);
+            if (endScreenPanel != null) endScreenPanel.SetActive(false);
+            
+            StartRound();
+        }
+        else
+        {
+            // Normal human play mode setup
+            startScreenPanel.SetActive(true);
+            hudPanel.SetActive(false);
+            endScreenPanel.SetActive(false);
+        }
     }
 
     public void StartGame()
@@ -97,38 +102,55 @@ public class GameManager : MonoBehaviour
         StartRound();
     }
 
+    [Header("Game Modes")]
+    public bool isTrainingMode = false;
     private void StartRound()
     {
         isGameActive = true;
         timer = 30f; // Reset timer to 30s for the new round
         UpdateTimerText();
         roundText.text = "Round " + currentRound + " / 5";
-
-        if (isHumanHunter)
+        if (isTrainingMode)
         {
-            // Human is the Hunter
-            cameraController.target = hunterTransform;
-            
-            humanHunterScript.isCurrentlyActive = true;
-            humanHunterScript.isHunter = true;
-            machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
+            // Activate both machines, deactivate both humans
+            humanHunterScript.isCurrentlyActive = false;
+            humanRunnerScript.isCurrentlyActive = false;
 
-            // Machine is the Runner
-            humanRunnerScript.isCurrentlyActive = false; // Turn human off on Runner
-            machineRunnerScript.ActivateAI(false);       // Turn AI on as Runner
+            machineHunterScript.ActivateAI(true);
+            machineRunnerScript.ActivateAI(false);
+
+            // Optional: Let the camera watch the action from a fixed point
+            // or just follow the Hunter during training
+            cameraController.target = hunterTransform;
         }
         else
         {
-            // Human is the Runner
-            cameraController.target = runnerTransform;
-            
-            humanRunnerScript.isCurrentlyActive = true;
-            humanRunnerScript.isHunter = false;
-            machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
+            if (isHumanHunter)
+            {
+                // Human is the Hunter
+                cameraController.target = hunterTransform;
+                
+                humanHunterScript.isCurrentlyActive = true;
+                humanHunterScript.isHunter = true;
+                machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
 
-            // Machine is the Hunter
-            humanHunterScript.isCurrentlyActive = false; // Turn human off on Hunter
-            machineHunterScript.ActivateAI(true);        // Turn AI on as Hunter
+                // Machine is the Runner
+                humanRunnerScript.isCurrentlyActive = false; // Turn human off on Runner
+                machineRunnerScript.ActivateAI(false);       // Turn AI on as Runner
+            }
+            else
+            {
+                // Human is the Runner
+                cameraController.target = runnerTransform;
+                
+                humanRunnerScript.isCurrentlyActive = true;
+                humanRunnerScript.isHunter = false;
+                machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
+
+                // Machine is the Hunter
+                humanHunterScript.isCurrentlyActive = false; // Turn human off on Hunter
+                machineHunterScript.ActivateAI(true);        // Turn AI on as Hunter
+            }
         }
     }
     // NEW: Call this function when the timer hits 0 or the Hunter catches the Runner
@@ -139,18 +161,39 @@ public class GameManager : MonoBehaviour
         if (didHumanWinRound)
         {
             humanWins++;
+            // The machine failed its objective
+            machineHunterScript.AddReward(-1f);
+            machineRunnerScript.AddReward(-1f);
         }
         else
         {
             machineWins++;
+            machineHunterScript.AddReward(1f);
+            machineRunnerScript.AddReward(1f);
         }
+
+        machineHunterScript.EndEpisode();
+        machineRunnerScript.EndEpisode();
 
         UpdateScoreBoard();
 
         // Check if the whole game is over
         if (humanWins >= 3 || machineWins >= 3 || currentRound >= 5)
         {
-            EndGame();
+            if (isTrainingMode)
+            {
+                // Instead of stopping at the End Game screen, reset values and keep looping forever!
+                currentRound = 1;
+                humanWins = 0;
+                machineWins = 0;
+                isHumanHunter = true;
+                ResetCharacters();
+                StartRound();
+            }
+            else
+            {
+                EndGame();
+            }
         }
         else
         {
