@@ -17694,6 +17694,9 @@ MonoBehaviour:
   cameraController: {fileID: 1891484271}
   hunterTransform: {fileID: 1872782677}
   runnerTransform: {fileID: 984657265}
+  hunterSpeed: 12
+  runnerSpeed: 9
+  catchDistance: 1.6
 --- !u!4 &1298652385
 Transform:
   m_ObjectHideFlags: 0
@@ -27395,6 +27398,10 @@ MonoBehaviour:
   distanceBehind: 6
   heightAbove: 3
   smoothSpeed: 5
+  obstructionLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  cameraRadius: 0.25
 --- !u!1001 &1911562754
 PrefabInstance:
   m_ObjectHideFlags: 0

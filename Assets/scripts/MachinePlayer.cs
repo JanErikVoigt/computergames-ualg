@@ -92,7 +92,7 @@ public class MachinePlayer : MonoBehaviour
         }
         transform.rotation = rotation;
 
-        if (rb != null)
+        if (rb != null && !rb.isKinematic)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
@@ -102,6 +102,12 @@ public class MachinePlayer : MonoBehaviour
     void Update()
     {
         if (!isCurrentlyActive) return;
+
+        // Sync speed directly in update to prevent NavMeshAgent initialization from resetting it to inspector defaults
+        if (agent != null && agent.enabled && agent.speed != agentSpeed)
+        {
+            agent.speed = agentSpeed;
+        }
 
         updateTimer += Time.deltaTime;
         if (updateTimer >= pathUpdateInterval)

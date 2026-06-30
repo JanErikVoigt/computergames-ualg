@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class GameManager : MonoBehaviour
 {
@@ -69,17 +70,24 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Record character initial spawn positions and rotations
+
+        // 2. Auto-assign the script references from the GameObjects to prevent any Inspector selection errors
         if (hunterTransform != null)
         {
+            humanHunterScript = hunterTransform.GetComponentInChildren<HumanPlayer>();
+            machineHunterScript = hunterTransform.GetComponentInChildren<MachinePlayer>();
             hunterStartPos = hunterTransform.position;
             hunterStartRot = hunterTransform.rotation;
         }
         if (runnerTransform != null)
         {
+            humanRunnerScript = runnerTransform.GetComponentInChildren<HumanPlayer>();
+            machineRunnerScript = runnerTransform.GetComponentInChildren<MachinePlayer>();
             runnerStartPos = runnerTransform.position;
             runnerStartRot = runnerTransform.rotation;
         }
+
+        Debug.Log($"[GameManager] Auto-configured components. Hunter: {hunterTransform?.name}, Runner: {runnerTransform?.name}");
 
         startScreenPanel.SetActive(true);
         hudPanel.SetActive(false);
@@ -109,42 +117,76 @@ public class GameManager : MonoBehaviour
         UpdateTimerText();
         roundText.text = "Round " + currentRound + " / 5";
 
-        // Apply speed settings dynamically to both human and AI components
-        if (humanHunterScript != null) humanHunterScript.moveSpeed = hunterSpeed;
-        if (machineHunterScript != null) machineHunterScript.agentSpeed = hunterSpeed;
-        if (humanRunnerScript != null) humanRunnerScript.moveSpeed = runnerSpeed;
-        if (machineRunnerScript != null) machineRunnerScript.agentSpeed = runnerSpeed;
-
         if (isHumanHunter)
         {
-            // Human is the Hunter
-            cameraController.target = hunterTransform;
-
-            humanHunterScript.isCurrentlyActive = true;
-            humanHunterScript.isHunter = true;
-            machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
-
-            // Machine is the Runner
-            humanRunnerScript.isCurrentlyActive = false; // Turn human off on Runner
-            machineRunnerScript.ActivateAI(false);       // Turn AI on as Runner
+            // Round 1/3/5: Human is Hunter, Machine is Runner
+            if (humanHunterScript != null)
+            {
+                humanHunterScript.isCurrentlyActive = true;
+                humanHunterScript.isHunter = true;
+                humanHunterScript.moveSpeed = hunterSpeed;
+            }
+            if (humanRunnerScript != null)
+            {
+                humanRunnerScript.isCurrentlyActive = false;
+                humanRunnerScript.isHunter = false;
+                humanRunnerScript.moveSpeed = runnerSpeed;
+            }
+            if (machineRunnerScript != null)
+            {
+                machineRunnerScript.agentSpeed = runnerSpeed;
+                machineRunnerScript.ActivateAI(false); // AI as Runner
+            }
+            if (machineHunterScript != null)
+            {
+                machineHunterScript.agentSpeed = hunterSpeed;
+                machineHunterScript.DeactivateAI();
+            }
         }
         else
         {
-            // Human is the Runner
-            cameraController.target = runnerTransform;
-
-            humanRunnerScript.isCurrentlyActive = true;
-            humanRunnerScript.isHunter = false;
-            machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
-
-            // Machine is the Hunter
-            humanHunterScript.isCurrentlyActive = false; // Turn human off on Hunter
-            machineHunterScript.ActivateAI(true);        // Turn AI on as Hunter
+            // Round 2/4: Human is Runner, Machine is Hunter
+            if (humanRunnerScript != null)
+            {
+                humanRunnerScript.isCurrentlyActive = true;
+                humanRunnerScript.isHunter = false;
+                humanRunnerScript.moveSpeed = runnerSpeed;
+            }
+            if (humanHunterScript != null)
+            {
+                humanHunterScript.isCurrentlyActive = false;
+                humanHunterScript.isHunter = true;
+                humanHunterScript.moveSpeed = hunterSpeed;
+            }
+            if (machineHunterScript != null)
+            {
+                machineHunterScript.agentSpeed = hunterSpeed;
+                machineHunterScript.ActivateAI(true); // AI as Hunter
+            }
+            if (machineRunnerScript != null)
+            {
+                machineRunnerScript.agentSpeed = runnerSpeed;
+                machineRunnerScript.DeactivateAI();
+            }
         }
+
+        // Update Camera target dynamically
+        if (cameraController != null)
+        {
+            cameraController.target = isHumanHunter ? hunterTransform : runnerTransform;
+        }
+
+        Debug.Log($"[GameManager] StartRound {currentRound}. isHumanHunter: {isHumanHunter}. Hunter: {hunterTransform?.name}, Runner: {runnerTransform?.name}");
     }
+    private int lastTransitionFrame = -1;
+
     // NEW: Call this function when the timer hits 0 or the Hunter catches the Runner
     public void EndRound(bool didHumanWinRound)
     {
+        // Guard against same-frame double-triggers (e.g., proximity check + physics collision)
+        if (Time.frameCount == lastTransitionFrame) return;
+        lastTransitionFrame = Time.frameCount;
+
         isGameActive = false;
 
         if (didHumanWinRound)
@@ -232,18 +274,25 @@ public class GameManager : MonoBehaviour
 
     private void ResetCharacters()
     {
-        // Reset Hunter capsule
+        // 1. Temporarily disable all NavMeshAgents to allow direct transform teleportation without physics fighting
+        NavMeshAgent[] agents = FindObjectsByType<NavMeshAgent>(FindObjectsSortMode.None);
+        foreach (var agent in agents)
+        {
+            if (agent != null)
+            {
+                agent.enabled = false;
+            }
+        }
+
+        // 2. Reset Hunter capsule
         if (hunterTransform != null)
         {
-            if (machineHunterScript != null)
+            hunterTransform.position = hunterStartPos;
+            hunterTransform.rotation = hunterStartRot;
+
+            if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
             {
-                machineHunterScript.Warp(hunterStartPos, hunterStartRot);
-            }
-            else
-            {
-                hunterTransform.position = hunterStartPos;
-                hunterTransform.rotation = hunterStartRot;
-                if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
+                if (!hunterRb.isKinematic)
                 {
                     hunterRb.linearVelocity = Vector3.zero;
                     hunterRb.angularVelocity = Vector3.zero;
@@ -251,18 +300,15 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Reset Runner capsule
+        // 3. Reset Runner capsule
         if (runnerTransform != null)
         {
-            if (machineRunnerScript != null)
+            runnerTransform.position = runnerStartPos;
+            runnerTransform.rotation = runnerStartRot;
+
+            if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
             {
-                machineRunnerScript.Warp(runnerStartPos, runnerStartRot);
-            }
-            else
-            {
-                runnerTransform.position = runnerStartPos;
-                runnerTransform.rotation = runnerStartRot;
-                if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
+                if (!runnerRb.isKinematic)
                 {
                     runnerRb.linearVelocity = Vector3.zero;
                     runnerRb.angularVelocity = Vector3.zero;
@@ -276,18 +322,11 @@ public class GameManager : MonoBehaviour
         if (isGameActive)
         {
             timer -= Time.deltaTime;
-            Debug.Log("Entered this check");
 
             // Proximity-based catch detection as a robust fallback/fail-safe
             if (hunterTransform != null && runnerTransform != null)
             {
                 float dist = Vector3.Distance(hunterTransform.position, runnerTransform.position);
-                
-                // Log the distance if they get relatively close to diagnose collision/pivot issues
-                if (dist <= catchDistance * 1.5f)
-                {
-                    Debug.Log($"[GameManager] Distance between players: {dist:F2} (Catch threshold: {catchDistance:F2})");
-                }
 
                 if (dist <= catchDistance)
                 {

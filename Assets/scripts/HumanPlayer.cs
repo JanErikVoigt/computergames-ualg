@@ -22,6 +22,8 @@ public class HumanPlayer : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         // Freeze rotation to prevent physics forces from tilting or spinning the capsule
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+        // Enable interpolation to eliminate jitter/stutter when tracked by the camera
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
 
@@ -51,6 +53,7 @@ public class HumanPlayer : MonoBehaviour
         {
             moveInput = 0f;
             turnInput = 0f;
+            rawInput = Vector2.zero; // Clear input when inactive
         }
     }
 
