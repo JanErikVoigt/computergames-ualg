@@ -1,15 +1,15 @@
 using UnityEngine;
-using TMPro; 
-using UnityEngine.UI; 
+using TMPro;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("Menu Panels")]
-    public GameObject startScreenPanel; 
+    public GameObject startScreenPanel;
     public GameObject endScreenPanel;
-    public GameObject hudPanel; 
+    public GameObject hudPanel;
 
     [Header("HUD Elements")]
     public TextMeshProUGUI roundText;
@@ -22,24 +22,29 @@ public class GameManager : MonoBehaviour
     [Header("Player Scripts")]
     public HumanPlayer humanHunterScript;
     public MachinePlayer machineHunterScript;
-    
+
     public HumanPlayer humanRunnerScript;
     public MachinePlayer machineRunnerScript;
 
     [Header("Characters & Camera")]
-    public CameraFollow cameraController; 
-    public Transform hunterTransform;     
-    public Transform runnerTransform;     
+    public CameraFollow cameraController;
+    public Transform hunterTransform;
+    public Transform runnerTransform;
 
-    private bool isGameActive = false; 
-    
+    [Header("Speed Settings")]
+    public float hunterSpeed = 12f;
+    public float runnerSpeed = 9f;
+    public float catchDistance = 1.6f;
+
+    private bool isGameActive = false;
+
     // Tracking variables
     private int currentRound = 1;
     private int humanWins = 0;
     private int machineWins = 0;
-    
+
     // NEW: Tracks whose turn it is to be the Hunter
-    private bool isHumanHunter = true; 
+    private bool isHumanHunter = true;
 
     // Character starting states for resetting
     private Vector3 hunterStartPos;
@@ -48,7 +53,7 @@ public class GameManager : MonoBehaviour
     private Quaternion runnerStartRot;
 
     // Timer state
-    private float timer = 30f; 
+    private float timer = 30f;
 
     void Awake()
     {
@@ -83,15 +88,15 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        startScreenPanel.SetActive(false); 
-        hudPanel.SetActive(true); 
-        
+        startScreenPanel.SetActive(false);
+        hudPanel.SetActive(true);
+
         // Reset everything for a fresh game
         currentRound = 1;
         humanWins = 0;
         machineWins = 0;
         isHumanHunter = true; // Human starts as Hunter in Round 1
-        
+
         ResetCharacters();
         UpdateScoreBoard();
         StartRound();
@@ -104,11 +109,17 @@ public class GameManager : MonoBehaviour
         UpdateTimerText();
         roundText.text = "Round " + currentRound + " / 5";
 
+        // Apply speed settings dynamically to both human and AI components
+        if (humanHunterScript != null) humanHunterScript.moveSpeed = hunterSpeed;
+        if (machineHunterScript != null) machineHunterScript.agentSpeed = hunterSpeed;
+        if (humanRunnerScript != null) humanRunnerScript.moveSpeed = runnerSpeed;
+        if (machineRunnerScript != null) machineRunnerScript.agentSpeed = runnerSpeed;
+
         if (isHumanHunter)
         {
             // Human is the Hunter
             cameraController.target = hunterTransform;
-            
+
             humanHunterScript.isCurrentlyActive = true;
             humanHunterScript.isHunter = true;
             machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
@@ -121,7 +132,7 @@ public class GameManager : MonoBehaviour
         {
             // Human is the Runner
             cameraController.target = runnerTransform;
-            
+
             humanRunnerScript.isCurrentlyActive = true;
             humanRunnerScript.isHunter = false;
             machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
@@ -135,7 +146,7 @@ public class GameManager : MonoBehaviour
     public void EndRound(bool didHumanWinRound)
     {
         isGameActive = false;
-        
+
         if (didHumanWinRound)
         {
             humanWins++;
@@ -156,13 +167,13 @@ public class GameManager : MonoBehaviour
         {
             // If the game isn't over, set up the next round
             currentRound++;
-            
+
             // This flips the roles: If it was true, it becomes false. If false, it becomes true.
-            isHumanHunter = !isHumanHunter; 
-            
+            isHumanHunter = !isHumanHunter;
+
             // Reset capsule positions back to their starting corners
             ResetCharacters();
-            
+
             StartRound();
         }
     }
@@ -265,6 +276,27 @@ public class GameManager : MonoBehaviour
         if (isGameActive)
         {
             timer -= Time.deltaTime;
+            Debug.Log("Entered this check");
+
+            // Proximity-based catch detection as a robust fallback/fail-safe
+            if (hunterTransform != null && runnerTransform != null)
+            {
+                float dist = Vector3.Distance(hunterTransform.position, runnerTransform.position);
+                
+                // Log the distance if they get relatively close to diagnose collision/pivot issues
+                if (dist <= catchDistance * 1.5f)
+                {
+                    Debug.Log($"[GameManager] Distance between players: {dist:F2} (Catch threshold: {catchDistance:F2})");
+                }
+
+                if (dist <= catchDistance)
+                {
+                    Debug.Log($"[GameManager] Proximity catch triggered! Distance: {dist:F2} <= {catchDistance:F2}");
+                    OnHunterCaughtRunner();
+                    return;
+                }
+            }
+
             if (timer <= 0f)
             {
                 timer = 0f;
