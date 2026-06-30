@@ -20,17 +20,14 @@ public class GameManager : MonoBehaviour
     [Header("End Screen Elements")]
     public TextMeshProUGUI victorText;
 
-    [Header("Player Scripts")]
-    public HumanPlayer humanHunterScript;
-    public MachinePlayer machineHunterScript;
-
-    public HumanPlayer humanRunnerScript;
-    public MachinePlayer machineRunnerScript;
-
     [Header("Characters & Camera")]
     public CameraFollow cameraController;
     public Transform hunterTransform;
     public Transform runnerTransform;
+
+    [Header("Game Characters")]
+    public GameCharacter hunterCharacter;
+    public GameCharacter runnerCharacter;
 
     [Header("Speed Settings")]
     public float hunterSpeed = 12f;
@@ -44,7 +41,7 @@ public class GameManager : MonoBehaviour
     private int humanWins = 0;
     private int machineWins = 0;
 
-    // NEW: Tracks whose turn it is to be the Hunter
+    // Tracks whose turn it is to be the Hunter
     private bool isHumanHunter = true;
 
     // Character starting states for resetting
@@ -70,19 +67,16 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-
-        // 2. Auto-assign the script references from the GameObjects to prevent any Inspector selection errors
+        // Auto-assign the GameCharacter references from the GameObjects
         if (hunterTransform != null)
         {
-            humanHunterScript = hunterTransform.GetComponentInChildren<HumanPlayer>();
-            machineHunterScript = hunterTransform.GetComponentInChildren<MachinePlayer>();
+            hunterCharacter = hunterTransform.GetComponentInChildren<GameCharacter>();
             hunterStartPos = hunterTransform.position;
             hunterStartRot = hunterTransform.rotation;
         }
         if (runnerTransform != null)
         {
-            humanRunnerScript = runnerTransform.GetComponentInChildren<HumanPlayer>();
-            machineRunnerScript = runnerTransform.GetComponentInChildren<MachinePlayer>();
+            runnerCharacter = runnerTransform.GetComponentInChildren<GameCharacter>();
             runnerStartPos = runnerTransform.position;
             runnerStartRot = runnerTransform.rotation;
         }
@@ -119,54 +113,26 @@ public class GameManager : MonoBehaviour
 
         if (isHumanHunter)
         {
-            // Round 1/3/5: Human is Hunter, Machine is Runner
-            if (humanHunterScript != null)
+            // Round 1/3/5: Human is Hunter (on hunterCharacter), Machine is Runner (on runnerCharacter)
+            if (hunterCharacter != null)
             {
-                humanHunterScript.isCurrentlyActive = true;
-                humanHunterScript.isHunter = true;
-                humanHunterScript.moveSpeed = hunterSpeed;
+                hunterCharacter.SetController(new HumanPlayerController(), hunterSpeed, true);
             }
-            if (humanRunnerScript != null)
+            if (runnerCharacter != null)
             {
-                humanRunnerScript.isCurrentlyActive = false;
-                humanRunnerScript.isHunter = false;
-                humanRunnerScript.moveSpeed = runnerSpeed;
-            }
-            if (machineRunnerScript != null)
-            {
-                machineRunnerScript.agentSpeed = runnerSpeed;
-                machineRunnerScript.ActivateAI(false); // AI as Runner
-            }
-            if (machineHunterScript != null)
-            {
-                machineHunterScript.agentSpeed = hunterSpeed;
-                machineHunterScript.DeactivateAI();
+                runnerCharacter.SetController(new MachinePlayerController(), runnerSpeed, false);
             }
         }
         else
         {
-            // Round 2/4: Human is Runner, Machine is Hunter
-            if (humanRunnerScript != null)
+            // Round 2/4: Human is Runner (on runnerCharacter), Machine is Hunter (on hunterCharacter)
+            if (runnerCharacter != null)
             {
-                humanRunnerScript.isCurrentlyActive = true;
-                humanRunnerScript.isHunter = false;
-                humanRunnerScript.moveSpeed = runnerSpeed;
+                runnerCharacter.SetController(new HumanPlayerController(), runnerSpeed, false);
             }
-            if (humanHunterScript != null)
+            if (hunterCharacter != null)
             {
-                humanHunterScript.isCurrentlyActive = false;
-                humanHunterScript.isHunter = true;
-                humanHunterScript.moveSpeed = hunterSpeed;
-            }
-            if (machineHunterScript != null)
-            {
-                machineHunterScript.agentSpeed = hunterSpeed;
-                machineHunterScript.ActivateAI(true); // AI as Hunter
-            }
-            if (machineRunnerScript != null)
-            {
-                machineRunnerScript.agentSpeed = runnerSpeed;
-                machineRunnerScript.DeactivateAI();
+                hunterCharacter.SetController(new MachinePlayerController(), hunterSpeed, true);
             }
         }
 
@@ -178,9 +144,10 @@ public class GameManager : MonoBehaviour
 
         Debug.Log($"[GameManager] StartRound {currentRound}. isHumanHunter: {isHumanHunter}. Hunter: {hunterTransform?.name}, Runner: {runnerTransform?.name}");
     }
+
     private int lastTransitionFrame = -1;
 
-    // NEW: Call this function when the timer hits 0 or the Hunter catches the Runner
+    // Call this function when the timer hits 0 or the Hunter catches the Runner
     public void EndRound(bool didHumanWinRound)
     {
         // Guard against same-frame double-triggers (e.g., proximity check + physics collision)
@@ -274,17 +241,17 @@ public class GameManager : MonoBehaviour
 
     private void ResetCharacters()
     {
-        // 1. Temporarily disable all NavMeshAgents to allow direct transform teleportation without physics fighting
-        NavMeshAgent[] agents = FindObjectsByType<NavMeshAgent>(FindObjectsSortMode.None);
-        foreach (var agent in agents)
+        // 1. Deactivate active controllers to clean up components (disable NavMeshAgents, reset kinematics)
+        if (hunterCharacter != null)
         {
-            if (agent != null)
-            {
-                agent.enabled = false;
-            }
+            hunterCharacter.SetController(null, 0f, false);
+        }
+        if (runnerCharacter != null)
+        {
+            runnerCharacter.SetController(null, 0f, false);
         }
 
-        // 2. Reset Hunter capsule
+        // 2. Reset Hunter capsule position and rotation
         if (hunterTransform != null)
         {
             hunterTransform.position = hunterStartPos;
@@ -292,15 +259,12 @@ public class GameManager : MonoBehaviour
 
             if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
             {
-                if (!hunterRb.isKinematic)
-                {
-                    hunterRb.linearVelocity = Vector3.zero;
-                    hunterRb.angularVelocity = Vector3.zero;
-                }
+                hunterRb.linearVelocity = Vector3.zero;
+                hunterRb.angularVelocity = Vector3.zero;
             }
         }
 
-        // 3. Reset Runner capsule
+        // 3. Reset Runner capsule position and rotation
         if (runnerTransform != null)
         {
             runnerTransform.position = runnerStartPos;
@@ -308,11 +272,8 @@ public class GameManager : MonoBehaviour
 
             if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
             {
-                if (!runnerRb.isKinematic)
-                {
-                    runnerRb.linearVelocity = Vector3.zero;
-                    runnerRb.angularVelocity = Vector3.zero;
-                }
+                runnerRb.linearVelocity = Vector3.zero;
+                runnerRb.angularVelocity = Vector3.zero;
             }
         }
     }
