@@ -2,12 +2,21 @@ using UnityEngine;
 using TMPro; 
 using UnityEngine.UI; 
 
+[System.Serializable]
+public class ArenaSetup
+{
+    public GameObject arenaObject;
+    public Transform hunterSpawnPoint;
+    public Transform runnerSpawnPoint;
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("Menu Panels")]
-    public GameObject startScreenPanel; 
+    public GameObject startScreenPanel;
+    public GameObject instructionsScreenPanel; 
     public GameObject endScreenPanel;
     public GameObject hudPanel; 
 
@@ -18,11 +27,14 @@ public class GameManager : MonoBehaviour
 
     [Header("End Screen Elements")]
     public TextMeshProUGUI victorText;
+    public TextMeshProUGUI statsText; 
+
+    [Header("Arena Progression")]
+    public ArenaSetup[] arenas; // Will hold Arena1, Arena2, Arena3
 
     [Header("Player Scripts")]
     public HumanPlayer humanHunterScript;
     public MachinePlayer machineHunterScript;
-    
     public HumanPlayer humanRunnerScript;
     public MachinePlayer machineRunnerScript;
 
@@ -32,180 +44,129 @@ public class GameManager : MonoBehaviour
     public Transform runnerTransform;     
 
     private bool isGameActive = false; 
-    
-    // Tracking variables
     private int currentRound = 1;
     private int humanWins = 0;
     private int machineWins = 0;
-    
-    // NEW: Tracks whose turn it is to be the Hunter
     private bool isHumanHunter = true; 
 
-    // Character starting states for resetting
-    private Vector3 hunterStartPos;
-    private Quaternion hunterStartRot;
-    private Vector3 runnerStartPos;
-    private Quaternion runnerStartRot;
-
-    // Timer state
+    // Stats tracking
+    private float totalTimePlayed = 0f;
+    private int roundsCompleted = 0;
     private float timer = 30f; 
 
     void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
     {
-        // Record initial states...
-        if (hunterTransform != null) { hunterStartPos = hunterTransform.position; hunterStartRot = hunterTransform.rotation; }
-        if (runnerTransform != null) { runnerStartPos = runnerTransform.position; runnerStartRot = runnerTransform.rotation; }
+        ShowStartScreen();
+    }
 
-        if (isTrainingMode)
-        {
-            // Hide menus completely and jump straight into the loop
-            if (startScreenPanel != null) startScreenPanel.SetActive(false);
-            if (hudPanel != null) hudPanel.SetActive(true);
-            if (endScreenPanel != null) endScreenPanel.SetActive(false);
-            
-            StartRound();
-        }
-        else
-        {
-            // Normal human play mode setup
-            startScreenPanel.SetActive(true);
-            hudPanel.SetActive(false);
-            endScreenPanel.SetActive(false);
-        }
+    public void ShowStartScreen()
+    {
+        startScreenPanel.SetActive(true);
+        instructionsScreenPanel.SetActive(false);
+        hudPanel.SetActive(false);
+        endScreenPanel.SetActive(false);
+    }
+
+    public void ShowInstructionsScreen()
+    {
+        startScreenPanel.SetActive(false);
+        instructionsScreenPanel.SetActive(true);
     }
 
     public void StartGame()
     {
-        startScreenPanel.SetActive(false); 
+        startScreenPanel.SetActive(false);
+        instructionsScreenPanel.SetActive(false); 
         hudPanel.SetActive(true); 
         
-        // Reset everything for a fresh game
         currentRound = 1;
         humanWins = 0;
         machineWins = 0;
-        isHumanHunter = true; // Human starts as Hunter in Round 1
+        totalTimePlayed = 0f;
+        roundsCompleted = 0;
+        isHumanHunter = true; 
         
-        ResetCharacters();
         UpdateScoreBoard();
         StartRound();
     }
 
-    [Header("Game Modes")]
-    public bool isTrainingMode = false;
     private void StartRound()
     {
         isGameActive = true;
-        timer = 30f; // Reset timer to 30s for the new round
+        timer = 30f; 
         UpdateTimerText();
         roundText.text = "Round " + currentRound + " / 5";
-        if (isTrainingMode)
+
+        ConfigureActiveArena();
+        ResetCharactersToCurrentArena();
+
+        if (isHumanHunter)
         {
-            // Activate both machines, deactivate both humans
-            humanHunterScript.isCurrentlyActive = false;
-            humanRunnerScript.isCurrentlyActive = false;
-
-            machineHunterScript.ActivateAI(true);
-            machineRunnerScript.ActivateAI(false);
-
-            // Optional: Let the camera watch the action from a fixed point
-            // or just follow the Hunter during training
             cameraController.target = hunterTransform;
+            humanHunterScript.isCurrentlyActive = true;
+            humanHunterScript.isHunter = true;
+            machineHunterScript.DeactivateAI(); 
+
+            humanRunnerScript.isCurrentlyActive = false; 
+            machineRunnerScript.ActivateAI(false);       
         }
         else
         {
-            if (isHumanHunter)
-            {
-                // Human is the Hunter
-                cameraController.target = hunterTransform;
-                
-                humanHunterScript.isCurrentlyActive = true;
-                humanHunterScript.isHunter = true;
-                machineHunterScript.DeactivateAI(); // Turn AI off on Hunter
+            cameraController.target = runnerTransform;
+            humanRunnerScript.isCurrentlyActive = true;
+            humanRunnerScript.isHunter = false;
+            machineRunnerScript.DeactivateAI(); 
 
-                // Machine is the Runner
-                humanRunnerScript.isCurrentlyActive = false; // Turn human off on Runner
-                machineRunnerScript.ActivateAI(false);       // Turn AI on as Runner
-            }
-            else
-            {
-                // Human is the Runner
-                cameraController.target = runnerTransform;
-                
-                humanRunnerScript.isCurrentlyActive = true;
-                humanRunnerScript.isHunter = false;
-                machineRunnerScript.DeactivateAI(); // Turn AI off on Runner
+            humanHunterScript.isCurrentlyActive = false; 
+            machineHunterScript.ActivateAI(true);        
+        }
+    }
 
-                // Machine is the Hunter
-                humanHunterScript.isCurrentlyActive = false; // Turn human off on Hunter
-                machineHunterScript.ActivateAI(true);        // Turn AI on as Hunter
+    private void ConfigureActiveArena()
+    {
+        // Determine which arena should be active
+        int activeIndex = 0;
+        if (currentRound == 3 || currentRound == 4) activeIndex = 1;
+        if (currentRound == 5) activeIndex = 2;
+
+        // Toggle the correct arena on and the others off
+        for (int i = 0; i < arenas.Length; i++)
+        {
+            if (arenas[i] != null && arenas[i].arenaObject != null)
+            {
+                arenas[i].arenaObject.SetActive(i == activeIndex);
             }
         }
     }
-    // NEW: Call this function when the timer hits 0 or the Hunter catches the Runner
+
     public void EndRound(bool didHumanWinRound)
     {
         isGameActive = false;
         
-        if (didHumanWinRound)
-        {
-            humanWins++;
-            // The machine failed its objective
-            machineHunterScript.AddReward(-1f);
-            machineRunnerScript.AddReward(-1f);
-        }
-        else
-        {
-            machineWins++;
-            machineHunterScript.AddReward(1f);
-            machineRunnerScript.AddReward(1f);
-        }
+        // Record stats
+        float timeSpentThisRound = 30f - timer;
+        totalTimePlayed += timeSpentThisRound;
+        roundsCompleted++;
 
-        machineHunterScript.EndEpisode();
-        machineRunnerScript.EndEpisode();
+        if (didHumanWinRound) humanWins++;
+        else machineWins++;
 
         UpdateScoreBoard();
 
-        // Check if the whole game is over
         if (humanWins >= 3 || machineWins >= 3 || currentRound >= 5)
         {
-            if (isTrainingMode)
-            {
-                // Instead of stopping at the End Game screen, reset values and keep looping forever!
-                currentRound = 1;
-                humanWins = 0;
-                machineWins = 0;
-                isHumanHunter = true;
-                ResetCharacters();
-                StartRound();
-            }
-            else
-            {
-                EndGame();
-            }
+            EndGame();
         }
         else
         {
-            // If the game isn't over, set up the next round
             currentRound++;
-            
-            // This flips the roles: If it was true, it becomes false. If false, it becomes true.
             isHumanHunter = !isHumanHunter; 
-            
-            // Reset capsule positions back to their starting corners
-            ResetCharacters();
-            
             StartRound();
         }
     }
@@ -217,58 +178,31 @@ public class GameManager : MonoBehaviour
 
         if (victorText != null)
         {
-            if (humanWins > machineWins)
-            {
-                victorText.text = "Human Wins the Game!";
-            }
-            else if (machineWins > humanWins)
-            {
-                victorText.text = "Machine Wins the Game!";
-            }
-            else
-            {
-                victorText.text = "It's a Tie!";
-            }
+            if (humanWins > machineWins) victorText.text = "Human Wins the Game!";
+            else if (machineWins > humanWins) victorText.text = "Machine Wins the Game!";
+            else victorText.text = "It's a Tie!";
         }
-    }
 
-    public void RestartGame()
-    {
-        // Hide the end screen and go back to the start menu
-        endScreenPanel.SetActive(false);
-        startScreenPanel.SetActive(true);
-    }
-
-    private void UpdateScoreBoard()
-    {
-        scoreText.text = "Human: " + humanWins + " | Machine: " + machineWins;
-    }
-
-    private void UpdateTimerText()
-    {
-        if (timerText != null)
+        if (statsText != null)
         {
-            timerText.text = "Time: " + timer.ToString("F1") + "s";
+            float avgTime = roundsCompleted > 0 ? totalTimePlayed / roundsCompleted : 0f;
+            statsText.text = $"Rounds Played: {roundsCompleted}\nAverage Round Time: {avgTime:F1}s";
         }
     }
 
-    // Call this from HunterCollision when Hunter catches Runner
-    public void OnHunterCaughtRunner()
+    private void ResetCharactersToCurrentArena()
     {
-        if (!isGameActive) return;
+        int activeIndex = 0;
+        if (currentRound == 3 || currentRound == 4) activeIndex = 1;
+        if (currentRound == 5) activeIndex = 2;
 
-        // Hunter caught Runner, so Hunter wins round.
-        // If human is Hunter, human wins round. Otherwise machine wins.
-        EndRound(isHumanHunter);
-    }
+        ArenaSetup currentSetup = arenas[activeIndex];
 
-    private void ResetCharacters()
-    {
         // Reset Hunter capsule
-        if (hunterTransform != null)
+        if (hunterTransform != null && currentSetup.hunterSpawnPoint != null)
         {
-            hunterTransform.position = hunterStartPos;
-            hunterTransform.rotation = hunterStartRot;
+            hunterTransform.position = currentSetup.hunterSpawnPoint.position;
+            hunterTransform.rotation = currentSetup.hunterSpawnPoint.rotation;
             if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
             {
                 hunterRb.linearVelocity = Vector3.zero;
@@ -277,16 +211,22 @@ public class GameManager : MonoBehaviour
         }
 
         // Reset Runner capsule
-        if (runnerTransform != null)
+        if (runnerTransform != null && currentSetup.runnerSpawnPoint != null)
         {
-            runnerTransform.position = runnerStartPos;
-            runnerTransform.rotation = runnerStartRot;
+            runnerTransform.position = currentSetup.runnerSpawnPoint.position;
+            runnerTransform.rotation = currentSetup.runnerSpawnPoint.rotation;
             if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
             {
                 runnerRb.linearVelocity = Vector3.zero;
                 runnerRb.angularVelocity = Vector3.zero;
             }
         }
+    }
+
+    public void OnHunterCaughtRunner()
+    {
+        if (!isGameActive) return;
+        EndRound(isHumanHunter);
     }
 
     void Update()
@@ -298,14 +238,28 @@ public class GameManager : MonoBehaviour
             {
                 timer = 0f;
                 UpdateTimerText();
-                // Runner wins round (Time out).
-                // If human is Runner (not isHumanHunter), human wins. Otherwise machine wins.
                 EndRound(!isHumanHunter);
             }
             else
             {
                 UpdateTimerText();
             }
+        }
+    }
+
+    private void UpdateScoreBoard()
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = "Human: " + humanWins + " | Machine: " + machineWins;
+        }
+    }
+
+    private void UpdateTimerText()
+    {
+        if (timerText != null)
+        {
+            timerText.text = "Time: " + timer.ToString("F1") + "s";
         }
     }
 }

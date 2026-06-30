@@ -842,7 +842,6 @@ Transform:
   - {fileID: 3491291672303654035}
   - {fileID: 5449112343459208347}
   - {fileID: 5413434195997519157}
-  - {fileID: 6657974954656067424}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4988007813561159917
@@ -1069,65 +1068,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!1 &5524077648592649632
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6657974954656067424}
-  - component: {fileID: 1741864369469166066}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6657974954656067424
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5524077648592649632}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 525.23334, y: 0.36, z: -13.439205}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 608783359827279664}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1741864369469166066
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5524077648592649632}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fc4b5c734cdcf74da7b6742eea7ef78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  startScreenPanel: {fileID: 0}
-  endScreenPanel: {fileID: 0}
-  hudPanel: {fileID: 0}
-  roundText: {fileID: 0}
-  timerText: {fileID: 0}
-  scoreText: {fileID: 0}
-  victorText: {fileID: 0}
-  humanHunterScript: {fileID: 1096343761969986406}
-  machineHunterScript: {fileID: 4878981896441922217}
-  humanRunnerScript: {fileID: 1135301322633745610}
-  machineRunnerScript: {fileID: 7970786476522224463}
-  cameraController: {fileID: 0}
-  hunterTransform: {fileID: 5449112343459208347}
-  runnerTransform: {fileID: 6321506665314785461}
-  isTrainingMode: 0
 --- !u!1 &5887789604014072503
 GameObject:
   m_ObjectHideFlags: 0
@@ -1444,10 +1384,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4415c62cc90dde24d9396b58d2b9c355, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachinePlayer
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 5000
   moveSpeed: 10
   turnSpeed: 150
   isCurrentlyActive: 0
@@ -1801,10 +1737,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4415c62cc90dde24d9396b58d2b9c355, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachinePlayer
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 5000
   moveSpeed: 10
   turnSpeed: 150
   isCurrentlyActive: 0

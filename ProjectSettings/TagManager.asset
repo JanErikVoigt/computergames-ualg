@@ -8,6 +8,9 @@ TagManager:
   - Wall
   - Runner
   - Hunter
+  - Arena2
+  - Arena3
+  - Arena1
   layers:
   - Default
   - TransparentFX

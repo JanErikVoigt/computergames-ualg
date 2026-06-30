@@ -9,26 +9,24 @@ public class HumanPlayer : MonoBehaviour
     public float turnSpeed = 150f;
 
     [Header("Current Role")]
-    public bool isCurrentlyActive = false; // Is the human controlling this capsule?
-    public bool isHunter = false; // True = Hunter, False = Runner
+    public bool isCurrentlyActive = false; 
+    public bool isHunter = false; 
 
     private Rigidbody rb;
+    private PlayerInput playerInput; // 1. Add a reference to the PlayerInput component
     private Vector2 rawInput = Vector2.zero;
     private float moveInput;
     private float turnInput;
 
-    void Start()
+    void Awake() 
     {
         rb = GetComponent<Rigidbody>();
-        // Freeze rotation to prevent physics forces from tilting or spinning the capsule
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+        
+        // 2. Grab the component when the game starts
+        playerInput = GetComponent<PlayerInput>(); 
     }
 
-
-    /// <summary>
-    /// Callback sent by the PlayerInput component when a Move action is triggered.
-    /// Requires the PlayerInput behavior to be set to "Send Messages" or "Broadcast Messages".
-    /// </summary>
     public void OnMove(InputValue value)
     {
         rawInput = value.Get<Vector2>();
@@ -36,6 +34,12 @@ public class HumanPlayer : MonoBehaviour
 
     void Update()
     {
+        // 3. Automatically turn the Input System on/off based on the active state
+        if (playerInput != null && playerInput.enabled != isCurrentlyActive)
+        {
+            playerInput.enabled = isCurrentlyActive;
+        }
+
         if (isCurrentlyActive)
         {
             Vector2 processedInput = rawInput;
@@ -51,16 +55,15 @@ public class HumanPlayer : MonoBehaviour
         {
             moveInput = 0f;
             turnInput = 0f;
+            rawInput = Vector2.zero; // Clear out any residual input when deactivated
         }
     }
 
     void FixedUpdate()
     {
-        // Apply forward/backward movement
         Vector3 movement = transform.forward * moveInput * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + movement);
 
-        // Apply rotation
         Quaternion turnRotation = Quaternion.Euler(0f, turnInput * turnSpeed * Time.fixedDeltaTime, 0f);
         rb.MoveRotation(rb.rotation * turnRotation);
     }
