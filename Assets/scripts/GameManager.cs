@@ -224,24 +224,38 @@ public class GameManager : MonoBehaviour
         // Reset Hunter capsule
         if (hunterTransform != null)
         {
-            hunterTransform.position = hunterStartPos;
-            hunterTransform.rotation = hunterStartRot;
-            if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
+            if (machineHunterScript != null)
             {
-                hunterRb.linearVelocity = Vector3.zero;
-                hunterRb.angularVelocity = Vector3.zero;
+                machineHunterScript.Warp(hunterStartPos, hunterStartRot);
+            }
+            else
+            {
+                hunterTransform.position = hunterStartPos;
+                hunterTransform.rotation = hunterStartRot;
+                if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
+                {
+                    hunterRb.linearVelocity = Vector3.zero;
+                    hunterRb.angularVelocity = Vector3.zero;
+                }
             }
         }
 
         // Reset Runner capsule
         if (runnerTransform != null)
         {
-            runnerTransform.position = runnerStartPos;
-            runnerTransform.rotation = runnerStartRot;
-            if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
+            if (machineRunnerScript != null)
             {
-                runnerRb.linearVelocity = Vector3.zero;
-                runnerRb.angularVelocity = Vector3.zero;
+                machineRunnerScript.Warp(runnerStartPos, runnerStartRot);
+            }
+            else
+            {
+                runnerTransform.position = runnerStartPos;
+                runnerTransform.rotation = runnerStartRot;
+                if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
+                {
+                    runnerRb.linearVelocity = Vector3.zero;
+                    runnerRb.angularVelocity = Vector3.zero;
+                }
             }
         }
     }
