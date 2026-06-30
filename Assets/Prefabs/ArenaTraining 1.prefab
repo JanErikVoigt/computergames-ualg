@@ -1447,7 +1447,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 5000
   moveSpeed: 10
   turnSpeed: 150
   isCurrentlyActive: 0
@@ -1804,7 +1804,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 5000
   moveSpeed: 10
   turnSpeed: 150
   isCurrentlyActive: 0
