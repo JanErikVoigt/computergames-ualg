@@ -3,8 +3,8 @@ behaviors:
   HunterAI:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 1024
-      buffer_size: 10240
+      batch_size: 2048
+      buffer_size: 20480
       learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
@@ -47,8 +47,8 @@ behaviors:
   RunnerAI:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 1024
-      buffer_size: 10240
+      batch_size: 2048
+      buffer_size: 20480
       learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
@@ -90,9 +90,7 @@ behaviors:
     behavioral_cloning: null
 env_settings:
   env_path: null
-  env_args:
-  - --time-scale
-  - '20'
+  env_args: null
   base_port: 5005
   num_envs: 1
   num_areas: 1

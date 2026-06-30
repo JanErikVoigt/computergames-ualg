@@ -2971,6 +2971,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: ArenaTraining
       objectReference: {fileID: 0}
+    - target: {fileID: 4878981896441922217, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: MaxStep
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7970786476522224463, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: MaxStep
+      value: 5000
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
