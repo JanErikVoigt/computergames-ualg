@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Environment")]
     public SkyboxDayNightController skyboxController;
+    public GameObject titleScreenCamera;
 
     [Header("Game Characters (NEW)")]
     public GameCharacter hunterCharacter;
@@ -87,6 +88,9 @@ public class GameManager : MonoBehaviour
         if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(false);
         hudPanel.SetActive(false);
         endScreenPanel.SetActive(false);
+
+        if (titleScreenCamera != null) titleScreenCamera.SetActive(true);
+        if (cameraController != null) cameraController.gameObject.SetActive(false);
     }
 
     public void ShowInstructionsScreen()
@@ -99,8 +103,11 @@ public class GameManager : MonoBehaviour
     {
         startScreenPanel.SetActive(false);
         if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(false); 
-        hudPanel.SetActive(true); 
-        
+        hudPanel.SetActive(true);
+
+        if (titleScreenCamera != null) titleScreenCamera.SetActive(false);
+        if (cameraController != null) cameraController.gameObject.SetActive(true);
+
         currentRound = 1;
         humanWins = 0;
         machineWins = 0;
