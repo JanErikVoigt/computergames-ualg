@@ -1,6 +1,6 @@
 using UnityEngine;
-using TMPro; 
-using UnityEngine.UI; 
+using TMPro;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class ArenaSetup
@@ -15,16 +15,14 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Testing Mode")]
-    [Tooltip("Check this box to lock the game to a specific arena for testing.")]
     public bool enableTestMode = false;
-    [Tooltip("0 = Arena1, 1 = Arena2, 2 = Arena3")]
     public int forceArenaIndex = 0; 
 
     [Header("Menu Panels")]
     public GameObject startScreenPanel;
     public GameObject instructionsScreenPanel; 
     public GameObject endScreenPanel;
-    public GameObject hudPanel; 
+    public GameObject hudPanel;
 
     [Header("HUD Elements")]
     public TextMeshProUGUI roundText;
@@ -36,29 +34,32 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI statsText; 
 
     [Header("Arena Progression")]
-    public ArenaSetup[] arenas; // Will hold Arena1, Arena2, Arena3
-
-    [Header("Player Scripts")]
-    public HumanPlayer humanHunterScript;
-    public MachinePlayer machineHunterScript;
-    public HumanPlayer humanRunnerScript;
-    public MachinePlayer machineRunnerScript;
+    public ArenaSetup[] arenas; 
 
     [Header("Characters & Camera")]
-    public CameraFollow cameraController; 
-    public Transform hunterTransform;     
-    public Transform runnerTransform;     
+    public CameraFollow cameraController;
+    public Transform hunterTransform;
+    public Transform runnerTransform;
 
-    private bool isGameActive = false; 
+    [Header("Game Characters (NEW)")]
+    public GameCharacter hunterCharacter;
+    public GameCharacter runnerCharacter;
+
+    [Header("Speed Settings (NEW)")]
+    public float hunterSpeed = 12f;
+    public float runnerSpeed = 9f;
+    public float catchDistance = 1.6f;
+
+    private bool isGameActive = false;
     private int currentRound = 1;
     private int humanWins = 0;
     private int machineWins = 0;
-    private bool isHumanHunter = true; 
+    private bool isHumanHunter = true;
 
-    // Stats tracking
     private float totalTimePlayed = 0f;
     private int roundsCompleted = 0;
-    private float timer = 30f; 
+    private float timer = 30f;
+    private int lastTransitionFrame = -1;
 
     void Awake()
     {
@@ -68,13 +69,17 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // Auto-assign the GameCharacter references from the provided Transforms
+        if (hunterTransform != null) hunterCharacter = hunterTransform.GetComponent<GameCharacter>();
+        if (runnerTransform != null) runnerCharacter = runnerTransform.GetComponent<GameCharacter>();
+
         ShowStartScreen();
     }
 
     public void ShowStartScreen()
     {
         startScreenPanel.SetActive(true);
-        instructionsScreenPanel.SetActive(false);
+        if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(false);
         hudPanel.SetActive(false);
         endScreenPanel.SetActive(false);
     }
@@ -82,13 +87,13 @@ public class GameManager : MonoBehaviour
     public void ShowInstructionsScreen()
     {
         startScreenPanel.SetActive(false);
-        instructionsScreenPanel.SetActive(true);
+        if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(true);
     }
 
     public void StartGame()
     {
         startScreenPanel.SetActive(false);
-        instructionsScreenPanel.SetActive(false); 
+        if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(false); 
         hudPanel.SetActive(true); 
         
         currentRound = 1;
@@ -108,55 +113,33 @@ public class GameManager : MonoBehaviour
         timer = 30f; 
         UpdateTimerText();
 
-        if (enableTestMode)
-        {
-            roundText.text = "TESTING ARENA " + forceArenaIndex;
-        }
-        else
-        {
-            roundText.text = "Round " + currentRound + " / 5";
-        }
+        if (enableTestMode) roundText.text = "TESTING ARENA " + forceArenaIndex;
+        else roundText.text = "Round " + currentRound + " / 5";
 
         ConfigureActiveArena();
         ResetCharactersToCurrentArena();
 
+        // INJECT COLLEAGUE'S AI CONTROLLER LOGIC
         if (isHumanHunter)
         {
+            if (hunterCharacter != null) hunterCharacter.SetController(new HumanPlayerController(), hunterSpeed, true);
+            if (runnerCharacter != null) runnerCharacter.SetController(new MachinePlayerController(), runnerSpeed, false);
             cameraController.target = hunterTransform;
-            humanHunterScript.isCurrentlyActive = true;
-            humanHunterScript.isHunter = true;
-            machineHunterScript.DeactivateAI(); 
-
-            humanRunnerScript.isCurrentlyActive = false; 
-            machineRunnerScript.ActivateAI(false);       
         }
         else
         {
+            if (runnerCharacter != null) runnerCharacter.SetController(new HumanPlayerController(), runnerSpeed, false);
+            if (hunterCharacter != null) hunterCharacter.SetController(new MachinePlayerController(), hunterSpeed, true);
             cameraController.target = runnerTransform;
-            humanRunnerScript.isCurrentlyActive = true;
-            humanRunnerScript.isHunter = false;
-            machineRunnerScript.DeactivateAI(); 
-
-            humanHunterScript.isCurrentlyActive = false; 
-            machineHunterScript.ActivateAI(true);        
         }
 
-        // Snap camera if the method exists
-        if (cameraController != null)
-        {
-            cameraController.SnapToTarget();
-        }
+        if (cameraController != null) cameraController.SnapToTarget();
     }
 
     private void ConfigureActiveArena()
     {
         int activeIndex = 0;
-
-        // NEW: Override the arena choice if Test Mode is on
-        if (enableTestMode)
-        {
-            activeIndex = forceArenaIndex;
-        }
+        if (enableTestMode) activeIndex = forceArenaIndex;
         else
         {
             if (currentRound == 3 || currentRound == 4) activeIndex = 1;
@@ -174,6 +157,9 @@ public class GameManager : MonoBehaviour
 
     public void EndRound(bool didHumanWinRound)
     {
+        if (Time.frameCount == lastTransitionFrame) return;
+        lastTransitionFrame = Time.frameCount;
+
         isGameActive = false;
         
         float timeSpentThisRound = 30f - timer;
@@ -185,17 +171,13 @@ public class GameManager : MonoBehaviour
 
         UpdateScoreBoard();
 
-        // NEW: If in Test Mode, just loop the round instantly forever
         if (enableTestMode)
         {
             StartRound();
             return;
         }
 
-        if (humanWins >= 3 || machineWins >= 3 || currentRound >= 5)
-        {
-            EndGame();
-        }
+        if (humanWins >= 3 || machineWins >= 3 || currentRound >= 5) EndGame();
         else
         {
             currentRound++;
@@ -225,13 +207,12 @@ public class GameManager : MonoBehaviour
 
     private void ResetCharactersToCurrentArena()
     {
-        int activeIndex = 0;
+        // 1. Deactivate active controllers to clean up NavMesh data (Colleague's logic)
+        if (hunterCharacter != null) hunterCharacter.SetController(null, 0f, false);
+        if (runnerCharacter != null) runnerCharacter.SetController(null, 0f, false);
 
-        // NEW: Override the spawn points if Test Mode is on
-        if (enableTestMode)
-        {
-            activeIndex = forceArenaIndex;
-        }
+        int activeIndex = 0;
+        if (enableTestMode) activeIndex = forceArenaIndex;
         else
         {
             if (currentRound == 3 || currentRound == 4) activeIndex = 1;
@@ -240,28 +221,9 @@ public class GameManager : MonoBehaviour
 
         ArenaSetup currentSetup = arenas[activeIndex];
 
-        // Safely reset using Rigidbody positions
-        if (hunterTransform != null && currentSetup.hunterSpawnPoint != null)
-        {
-            if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
-            {
-                hunterRb.position = currentSetup.hunterSpawnPoint.position;
-                hunterRb.rotation = currentSetup.hunterSpawnPoint.rotation;
-                hunterRb.linearVelocity = Vector3.zero;
-                hunterRb.angularVelocity = Vector3.zero;
-            }
-        }
-
-        if (runnerTransform != null && currentSetup.runnerSpawnPoint != null)
-        {
-            if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
-            {
-                runnerRb.position = currentSetup.runnerSpawnPoint.position;
-                runnerRb.rotation = currentSetup.runnerSpawnPoint.rotation;
-                runnerRb.linearVelocity = Vector3.zero;
-                runnerRb.angularVelocity = Vector3.zero;
-            }
-        }
+        // Safely warp both characters
+        TeleportSafely(hunterTransform, currentSetup.hunterSpawnPoint);
+        TeleportSafely(runnerTransform, currentSetup.runnerSpawnPoint);
     }
 
     public void OnHunterCaughtRunner()
@@ -275,6 +237,17 @@ public class GameManager : MonoBehaviour
         if (isGameActive)
         {
             timer -= Time.deltaTime;
+
+            // Colleague's proximity catch fallback
+            if (hunterTransform != null && runnerTransform != null)
+            {
+                if (Vector3.Distance(hunterTransform.position, runnerTransform.position) <= catchDistance)
+                {
+                    OnHunterCaughtRunner();
+                    return;
+                }
+            }
+
             if (timer <= 0f)
             {
                 timer = 0f;
@@ -290,17 +263,36 @@ public class GameManager : MonoBehaviour
 
     private void UpdateScoreBoard()
     {
-        if (scoreText != null)
-        {
-            scoreText.text = "Human: " + humanWins + " | Machine: " + machineWins;
-        }
+        if (scoreText != null) scoreText.text = "Human: " + humanWins + " | Machine: " + machineWins;
     }
 
     private void UpdateTimerText()
     {
-        if (timerText != null)
+        if (timerText != null) timerText.text = "Time: " + timer.ToString("F1") + "s";
+    }
+
+    private void TeleportSafely(Transform charTransform, Transform spawnTransform)
+    {
+        if (charTransform == null || spawnTransform == null) return;
+
+        // 1. Force NavMeshAgent to warp
+        if (charTransform.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent))
         {
-            timerText.text = "Time: " + timer.ToString("F1") + "s";
+            agent.enabled = false; 
+            agent.Warp(spawnTransform.position);
         }
+
+        // 2. Kill all Rigidbody momentum
+        if (charTransform.TryGetComponent<Rigidbody>(out var rb))
+        {
+            rb.position = spawnTransform.position;
+            rb.rotation = spawnTransform.rotation;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // 3. Set standard transform
+        charTransform.position = spawnTransform.position;
+        charTransform.rotation = spawnTransform.rotation;
     }
 }
