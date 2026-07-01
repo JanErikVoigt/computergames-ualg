@@ -7340,6 +7340,10 @@ PrefabInstance:
       propertyPath: MaxStep
       value: 5000
       objectReference: {fileID: 0}
+    - target: {fileID: 5000552992748232239, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d7808e852e08b934aa5b9fdcae5d0ecd, type: 2}
     - target: {fileID: 7970786476522224463, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: MaxStep
       value: 5000
@@ -9524,6 +9528,10 @@ PrefabInstance:
       propertyPath: MaxStep
       value: 5000
       objectReference: {fileID: 0}
+    - target: {fileID: 5000552992748232239, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d7808e852e08b934aa5b9fdcae5d0ecd, type: 2}
     - target: {fileID: 7970786476522224463, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: MaxStep
       value: 5000
