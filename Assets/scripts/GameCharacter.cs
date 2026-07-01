@@ -10,6 +10,9 @@ public class GameCharacter : MonoBehaviour
     public NavMeshAgent Agent { get; private set; }
     public PlayerInput InputComponent { get; private set; }
 
+    [Header("Falling")]
+    public float fallGravityMultiplier = 2.5f;
+
     private IPlayerController activeController;
     private Animator animator;
     private static readonly int SpeedParam = Animator.StringToHash("Speed");
@@ -65,6 +68,12 @@ public class GameCharacter : MonoBehaviour
         if (activeController != null)
         {
             activeController.FixedUpdateController();
+        }
+
+        // Extra downward acceleration while falling, so drops feel snappier than default gravity
+        if (!Rb.isKinematic && Rb.linearVelocity.y < 0f)
+        {
+            Rb.AddForce(Physics.gravity * (fallGravityMultiplier - 1f), ForceMode.Acceleration);
         }
     }
 
