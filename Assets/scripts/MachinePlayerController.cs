@@ -17,6 +17,10 @@ public class MachinePlayerController : IPlayerController
 
     private float updateTimer = 0f;
 
+    public float CurrentSpeed => (character != null && character.Agent != null && character.Agent.enabled)
+        ? character.Agent.velocity.magnitude
+        : 0f;
+
     public void Initialize(GameCharacter character, float speed, bool isHunter)
     {
         this.character = character;

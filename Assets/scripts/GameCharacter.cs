@@ -11,12 +11,16 @@ public class GameCharacter : MonoBehaviour
     public PlayerInput InputComponent { get; private set; }
 
     private IPlayerController activeController;
+    private Animator animator;
+    private static readonly int SpeedParam = Animator.StringToHash("Speed");
+    private const float MovingSpeedThreshold = 0.1f;
 
     void Awake()
     {
         Rb = GetComponent<Rigidbody>();
         Agent = GetComponent<NavMeshAgent>();
         InputComponent = GetComponent<PlayerInput>();
+        animator = GetComponentInChildren<Animator>();
 
         // Set default physics settings
         Rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -44,6 +48,16 @@ public class GameCharacter : MonoBehaviour
         {
             activeController.UpdateController();
         }
+
+        UpdateAnimator();
+    }
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        float speed = activeController != null ? activeController.CurrentSpeed : 0f;
+        animator.SetFloat(SpeedParam, speed < MovingSpeedThreshold ? 0f : speed);
     }
 
     void FixedUpdate()

@@ -9,6 +9,8 @@ public class HumanPlayerController : IPlayerController
     private float moveInput;
     private float turnInput;
 
+    public float CurrentSpeed => Mathf.Abs(moveInput) * moveSpeed;
+
     public void Initialize(GameCharacter character, float speed, bool isHunter)
     {
         this.character = character;

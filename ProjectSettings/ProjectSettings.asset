@@ -114,6 +114,7 @@ PlayerSettings:
   xboxEnableGuest: 0
   xboxEnablePIXSampling: 0
   metalFramebufferOnly: 0
+  metalUseMetalDisplayLink: 0
   xboxOneResolution: 0
   xboxOneSResolution: 0
   xboxOneXResolution: 3
@@ -832,6 +833,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
+    Standalone: SENTIS_ANALYTICS_ENABLED;APP_UI_EDITOR_ONLY
     WebGL: SENTIS_ANALYTICS_ENABLED;APP_UI_EDITOR_ONLY
   additionalCompilerArguments: {}
   platformArchitecture: {}
@@ -931,10 +933,10 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: ef9eb679-4933-4e33-8669-644bf842b2b1
+  cloudProjectId: 7e26c599-cfea-48aa-ad1f-9407966a81e8
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Assignment1
+  projectName: computergames-ualg
   organizationId: janerikv
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
