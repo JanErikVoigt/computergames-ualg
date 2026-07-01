@@ -7328,6 +7328,18 @@ PrefabInstance:
       propertyPath: machineRunnerScript
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2464420988585327223, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
+    - target: {fileID: 2650007846526002399, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
+    - target: {fileID: 3959434324897066003, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
     - target: {fileID: 4760356874021116291, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: m_Name
       value: Arena2
@@ -9516,6 +9528,18 @@ PrefabInstance:
       propertyPath: startScreenPanel
       value: 
       objectReference: {fileID: 179576858}
+    - target: {fileID: 2464420988585327223, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
+    - target: {fileID: 2650007846526002399, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
+    - target: {fileID: 3959434324897066003, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
     - target: {fileID: 4760356874021116291, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: m_Name
       value: ArenaTraining
@@ -9532,6 +9556,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: d7808e852e08b934aa5b9fdcae5d0ecd, type: 2}
+    - target: {fileID: 5073397107885025112, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d25f5fcbdc403d3739d6d9a37c9d194a, type: 2}
     - target: {fileID: 7970786476522224463, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: MaxStep
       value: 5000
