@@ -24,4 +24,13 @@ public class CameraFollow : MonoBehaviour
             transform.LookAt(target);
         }
     }
+
+    public void SnapToTarget()
+    {
+        if (target != null)
+        {
+            transform.position = target.position - (target.forward * distanceBehind) + (Vector3.up * heightAbove);
+            transform.LookAt(target);
+        }
+    }
 }

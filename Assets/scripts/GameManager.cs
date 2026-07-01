@@ -14,6 +14,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Testing Mode")]
+    [Tooltip("Check this box to lock the game to a specific arena for testing.")]
+    public bool enableTestMode = false;
+    [Tooltip("0 = Arena1, 1 = Arena2, 2 = Arena3")]
+    public int forceArenaIndex = 0; 
+
     [Header("Menu Panels")]
     public GameObject startScreenPanel;
     public GameObject instructionsScreenPanel; 
@@ -101,7 +107,15 @@ public class GameManager : MonoBehaviour
         isGameActive = true;
         timer = 30f; 
         UpdateTimerText();
-        roundText.text = "Round " + currentRound + " / 5";
+
+        if (enableTestMode)
+        {
+            roundText.text = "TESTING ARENA " + forceArenaIndex;
+        }
+        else
+        {
+            roundText.text = "Round " + currentRound + " / 5";
+        }
 
         ConfigureActiveArena();
         ResetCharactersToCurrentArena();
@@ -126,16 +140,29 @@ public class GameManager : MonoBehaviour
             humanHunterScript.isCurrentlyActive = false; 
             machineHunterScript.ActivateAI(true);        
         }
+
+        // Snap camera if the method exists
+        if (cameraController != null)
+        {
+            cameraController.SnapToTarget();
+        }
     }
 
     private void ConfigureActiveArena()
     {
-        // Determine which arena should be active
         int activeIndex = 0;
-        if (currentRound == 3 || currentRound == 4) activeIndex = 1;
-        if (currentRound == 5) activeIndex = 2;
 
-        // Toggle the correct arena on and the others off
+        // NEW: Override the arena choice if Test Mode is on
+        if (enableTestMode)
+        {
+            activeIndex = forceArenaIndex;
+        }
+        else
+        {
+            if (currentRound == 3 || currentRound == 4) activeIndex = 1;
+            if (currentRound == 5) activeIndex = 2;
+        }
+
         for (int i = 0; i < arenas.Length; i++)
         {
             if (arenas[i] != null && arenas[i].arenaObject != null)
@@ -149,7 +176,6 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         
-        // Record stats
         float timeSpentThisRound = 30f - timer;
         totalTimePlayed += timeSpentThisRound;
         roundsCompleted++;
@@ -158,6 +184,13 @@ public class GameManager : MonoBehaviour
         else machineWins++;
 
         UpdateScoreBoard();
+
+        // NEW: If in Test Mode, just loop the round instantly forever
+        if (enableTestMode)
+        {
+            StartRound();
+            return;
+        }
 
         if (humanWins >= 3 || machineWins >= 3 || currentRound >= 5)
         {
@@ -193,30 +226,38 @@ public class GameManager : MonoBehaviour
     private void ResetCharactersToCurrentArena()
     {
         int activeIndex = 0;
-        if (currentRound == 3 || currentRound == 4) activeIndex = 1;
-        if (currentRound == 5) activeIndex = 2;
+
+        // NEW: Override the spawn points if Test Mode is on
+        if (enableTestMode)
+        {
+            activeIndex = forceArenaIndex;
+        }
+        else
+        {
+            if (currentRound == 3 || currentRound == 4) activeIndex = 1;
+            if (currentRound == 5) activeIndex = 2;
+        }
 
         ArenaSetup currentSetup = arenas[activeIndex];
 
-        // Reset Hunter capsule
+        // Safely reset using Rigidbody positions
         if (hunterTransform != null && currentSetup.hunterSpawnPoint != null)
         {
-            hunterTransform.position = currentSetup.hunterSpawnPoint.position;
-            hunterTransform.rotation = currentSetup.hunterSpawnPoint.rotation;
             if (hunterTransform.TryGetComponent<Rigidbody>(out var hunterRb))
             {
+                hunterRb.position = currentSetup.hunterSpawnPoint.position;
+                hunterRb.rotation = currentSetup.hunterSpawnPoint.rotation;
                 hunterRb.linearVelocity = Vector3.zero;
                 hunterRb.angularVelocity = Vector3.zero;
             }
         }
 
-        // Reset Runner capsule
         if (runnerTransform != null && currentSetup.runnerSpawnPoint != null)
         {
-            runnerTransform.position = currentSetup.runnerSpawnPoint.position;
-            runnerTransform.rotation = currentSetup.runnerSpawnPoint.rotation;
             if (runnerTransform.TryGetComponent<Rigidbody>(out var runnerRb))
             {
+                runnerRb.position = currentSetup.runnerSpawnPoint.position;
+                runnerRb.rotation = currentSetup.runnerSpawnPoint.rotation;
                 runnerRb.linearVelocity = Vector3.zero;
                 runnerRb.angularVelocity = Vector3.zero;
             }
