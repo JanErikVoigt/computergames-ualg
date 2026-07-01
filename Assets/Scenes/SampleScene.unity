@@ -2175,6 +2175,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4618776250552205901, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
+      propertyPath: m_LinearDamping
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8828504933798825594, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
     - {fileID: 2006825248478552575, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
@@ -8292,7 +8296,7 @@ Transform:
   m_GameObject: {fileID: 1815874049}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -44.81, y: 3.74, z: -11.62}
+  m_LocalPosition: {x: -41.57, y: 1.86, z: -5.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8817,6 +8821,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5930938789807121347, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
+      propertyPath: m_LinearDamping
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6100445503090136496, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
     - {fileID: 1741340706943085695, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
@@ -8862,6 +8870,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfe37e0fe77da7babf05e4107d6f3a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameCharacter
+  fallGravityMultiplier: 2.5
 --- !u!195 &1937303177
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -9534,6 +9543,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecfe37e0fe77da7babf05e4107d6f3a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameCharacter
+  fallGravityMultiplier: 2.5
 --- !u!114 &2103852859
 MonoBehaviour:
   m_ObjectHideFlags: 0

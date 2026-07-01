@@ -11,7 +11,7 @@ public class GameCharacter : MonoBehaviour
     public PlayerInput InputComponent { get; private set; }
 
     [Header("Falling")]
-    public float fallGravityMultiplier = 2.5f;
+    public float fallGravityMultiplier = 1000f;
 
     private IPlayerController activeController;
     private Animator animator;
@@ -70,8 +70,9 @@ public class GameCharacter : MonoBehaviour
             activeController.FixedUpdateController();
         }
 
-        // Extra downward acceleration while falling, so drops feel snappier than default gravity
-        if (!Rb.isKinematic && Rb.linearVelocity.y < 0f)
+        // Extra downward acceleration, applied unconditionally (not gated on already falling) so it
+        // still works even if Use Gravity is off or something else is holding vertical velocity at 0.
+        if (!Rb.isKinematic)
         {
             Rb.AddForce(Physics.gravity * (fallGravityMultiplier - 1f), ForceMode.Acceleration);
         }
