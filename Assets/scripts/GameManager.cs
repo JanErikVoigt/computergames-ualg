@@ -91,6 +91,18 @@ public class GameManager : MonoBehaviour
 
         if (titleScreenCamera != null) titleScreenCamera.SetActive(true);
         if (cameraController != null) cameraController.gameObject.SetActive(false);
+
+        // Reactivate all arenas so the title screen (and its orbiting camera) can show any of them
+        if (arenas != null)
+        {
+            foreach (var arena in arenas)
+            {
+                if (arena != null && arena.arenaObject != null)
+                {
+                    arena.arenaObject.SetActive(true);
+                }
+            }
+        }
     }
 
     public void ShowInstructionsScreen()
