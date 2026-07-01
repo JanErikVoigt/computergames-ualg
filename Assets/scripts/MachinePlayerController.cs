@@ -5,15 +5,15 @@ public class MachinePlayerController : IPlayerController
 {
     private GameCharacter character;
     private float agentSpeed;
-    private float agentAcceleration = 20f;
-    private float agentAngularSpeed = 360f;
+    private float agentAcceleration = 500f;
+    private float agentAngularSpeed = 1200f;
     private bool isHunter;
 
     // Hiding Settings
     private float hideRadius = 30f;
     private float hideOffset = 2.5f;
-    private float pathUpdateInterval = 0.1f;
-    private LayerMask obstacleLayerMask = ~0; // Target all layers by default
+    private float pathUpdateInterval = 0.05f;
+    private LayerMask obstacleLayerMask = 1 << 6; // Target all layers by default
 
     private float updateTimer = 0f;
 
@@ -27,6 +27,7 @@ public class MachinePlayerController : IPlayerController
         if (character.Rb != null)
         {
             character.Rb.isKinematic = true;
+            character.Rb.interpolation = RigidbodyInterpolation.None; // NEW: Stops the physics fight
         }
 
         // Enable NavMeshAgent and configure parameters
@@ -34,10 +35,14 @@ public class MachinePlayerController : IPlayerController
         {
             character.Agent.enabled = true;
             character.Agent.speed = agentSpeed;
-            character.Agent.acceleration = agentAcceleration;
+            
+            // INCREASE ACCELERATION
+            character.Agent.acceleration = agentAcceleration; // Snappier starts and stops
             character.Agent.angularSpeed = agentAngularSpeed;
+            
+            // DISABLE AUTO-BRAKING
+            character.Agent.autoBraking = false; 
 
-            // Force immediate destination update
             updateTimer = pathUpdateInterval;
         }
     }
@@ -74,16 +79,15 @@ public class MachinePlayerController : IPlayerController
     {
         if (character == null) return;
 
-        // Disable NavMeshAgent
         if (character.Agent != null)
         {
             character.Agent.enabled = false;
         }
 
-        // Re-enable Rigidbody physics for human player control
         if (character.Rb != null)
         {
             character.Rb.isKinematic = false;
+            character.Rb.interpolation = RigidbodyInterpolation.Interpolate; // NEW: Restore smooth physics
         }
     }
 

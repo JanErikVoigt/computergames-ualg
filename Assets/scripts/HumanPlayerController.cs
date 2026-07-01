@@ -47,7 +47,14 @@ public class HumanPlayerController : IPlayerController
 
     public void FixedUpdateController()
     {
-        if (character == null) return;
+        if (character == null || character.Rb == null) return;
+
+        // --- NEW: FORCE PHYSICS WAKE-UP ---
+        // If the body is sleeping, force it awake so it accepts movement
+        if (character.Rb.IsSleeping())
+        {
+            character.Rb.WakeUp();
+        }
 
         // Apply forward/backward movement
         Vector3 movement = character.transform.forward * moveInput * moveSpeed * Time.fixedDeltaTime;

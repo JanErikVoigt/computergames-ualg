@@ -18,6 +18,7 @@ public class HunterCollision : MonoBehaviour
 
     private void HandleContact(GameObject otherGo)
     {
+        if (otherGo.name == "ArenaFloor") return;
         GameManager gameManager = GameManager.Instance;
         if (gameManager == null) return;
 

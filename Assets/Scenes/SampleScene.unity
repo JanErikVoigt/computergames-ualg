@@ -2118,6 +2118,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4618776250552205901, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
+      propertyPath: m_LinearDamping
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 8828504933798825594, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
     - {fileID: 2006825248478552575, guid: 5ee67d3a3efb44f49a43f1816d7c45ac, type: 3}
@@ -4684,6 +4688,7 @@ MonoBehaviour:
   hunterSpeed: 12
   runnerSpeed: 12
   catchDistance: 1.6
+  machineSpeedIncrement: 1.5
 --- !u!4 &1167996534 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 346ea8ab0a1c21c4e95694bac3863161, type: 3}
@@ -7328,6 +7333,10 @@ PrefabInstance:
       propertyPath: machineRunnerScript
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 3300855819782652119, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: m_Convex
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4760356874021116291, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: m_Name
       value: Arena2
@@ -7344,7 +7353,8 @@ PrefabInstance:
       propertyPath: MaxStep
       value: 5000
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5269830215781759620, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
     m_RemovedGameObjects:
     - {fileID: 2509345085116660277, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
     - {fileID: 5830105094421300562, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
@@ -8560,6 +8570,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5930938789807121347, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
+      propertyPath: m_LinearDamping
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6100445503090136496, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
     - {fileID: 1741340706943085695, guid: 1a91b6fcd3ba9fd47904fd8210d74d89, type: 3}
@@ -8615,8 +8629,8 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 1000
+  m_Acceleration: 500
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -9253,8 +9267,8 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 1000
+  m_Acceleration: 500
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
@@ -9512,6 +9526,10 @@ PrefabInstance:
       propertyPath: startScreenPanel
       value: 
       objectReference: {fileID: 179576858}
+    - target: {fileID: 3300855819782652119, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
+      propertyPath: m_Convex
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4760356874021116291, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
       propertyPath: m_Name
       value: ArenaTraining
@@ -9544,7 +9562,8 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -15.55
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5269830215781759620, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
     m_RemovedGameObjects:
     - {fileID: 2902029212043428698, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}
     - {fileID: 5122153606436513161, guid: b96168bcc03f9bf41abf9d9ce90adf39, type: 3}

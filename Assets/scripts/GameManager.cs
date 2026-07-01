@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 [System.Serializable]
 public class ArenaSetup
@@ -49,6 +50,9 @@ public class GameManager : MonoBehaviour
     public float hunterSpeed = 12f;
     public float runnerSpeed = 9f;
     public float catchDistance = 1.6f;
+    
+    [Tooltip("How much extra speed the Machine gains per round.")]
+    public float machineSpeedIncrement = 0.5f; 
 
     private bool isGameActive = false;
     private int currentRound = 1;
@@ -69,7 +73,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Auto-assign the GameCharacter references from the provided Transforms
         if (hunterTransform != null) hunterCharacter = hunterTransform.GetComponent<GameCharacter>();
         if (runnerTransform != null) runnerCharacter = runnerTransform.GetComponent<GameCharacter>();
 
@@ -92,10 +95,31 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        StartCoroutine(StartGameRoutine());
+    }
+
+    private System.Collections.IEnumerator StartGameRoutine()
+    {
+        // 1. Hide Panels
         startScreenPanel.SetActive(false);
         if (instructionsScreenPanel != null) instructionsScreenPanel.SetActive(false); 
         hudPanel.SetActive(true); 
-        
+
+        // 2. Clear UI Selection
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        // 3. WAIT a frame to let WebGL catch up
+        yield return null; 
+
+        // 4. Force focus to the screen center (often triggers WebGL input capture)
+        #if UNITY_WEBGL && !UNITY_EDITOR
+            Application.ExternalEval("window.focus();");
+        #endif
+
+        // 5. Initialize Round
         currentRound = 1;
         humanWins = 0;
         machineWins = 0;
@@ -106,7 +130,6 @@ public class GameManager : MonoBehaviour
         UpdateScoreBoard();
         StartRound();
     }
-
     private void StartRound()
     {
         isGameActive = true;
@@ -119,17 +142,23 @@ public class GameManager : MonoBehaviour
         ConfigureActiveArena();
         ResetCharactersToCurrentArena();
 
-        // INJECT COLLEAGUE'S AI CONTROLLER LOGIC
+        // --- NEW: PROGRESSIVE DIFFICULTY CALCULATION ---
+        // Machine gains speed based on the round number. Round 1 has no bonus (currentRound - 1 = 0).
+        float currentMachineHunterSpeed = hunterSpeed + (machineSpeedIncrement * (currentRound - 1));
+        float currentMachineRunnerSpeed = runnerSpeed + (machineSpeedIncrement * (currentRound - 1));
+
         if (isHumanHunter)
         {
+            // Human gets base speed, Machine gets boosted runner speed
             if (hunterCharacter != null) hunterCharacter.SetController(new HumanPlayerController(), hunterSpeed, true);
-            if (runnerCharacter != null) runnerCharacter.SetController(new MachinePlayerController(), runnerSpeed, false);
+            if (runnerCharacter != null) runnerCharacter.SetController(new MachinePlayerController(), currentMachineRunnerSpeed, false);
             cameraController.target = hunterTransform;
         }
         else
         {
+            // Human gets base speed, Machine gets boosted hunter speed
             if (runnerCharacter != null) runnerCharacter.SetController(new HumanPlayerController(), runnerSpeed, false);
-            if (hunterCharacter != null) hunterCharacter.SetController(new MachinePlayerController(), hunterSpeed, true);
+            if (hunterCharacter != null) hunterCharacter.SetController(new MachinePlayerController(), currentMachineHunterSpeed, true);
             cameraController.target = runnerTransform;
         }
 
@@ -207,7 +236,6 @@ public class GameManager : MonoBehaviour
 
     private void ResetCharactersToCurrentArena()
     {
-        // 1. Deactivate active controllers to clean up NavMesh data (Colleague's logic)
         if (hunterCharacter != null) hunterCharacter.SetController(null, 0f, false);
         if (runnerCharacter != null) runnerCharacter.SetController(null, 0f, false);
 
@@ -221,7 +249,6 @@ public class GameManager : MonoBehaviour
 
         ArenaSetup currentSetup = arenas[activeIndex];
 
-        // Safely warp both characters
         TeleportSafely(hunterTransform, currentSetup.hunterSpawnPoint);
         TeleportSafely(runnerTransform, currentSetup.runnerSpawnPoint);
     }
@@ -238,7 +265,6 @@ public class GameManager : MonoBehaviour
         {
             timer -= Time.deltaTime;
 
-            // Colleague's proximity catch fallback
             if (hunterTransform != null && runnerTransform != null)
             {
                 if (Vector3.Distance(hunterTransform.position, runnerTransform.position) <= catchDistance)
@@ -275,14 +301,12 @@ public class GameManager : MonoBehaviour
     {
         if (charTransform == null || spawnTransform == null) return;
 
-        // 1. Force NavMeshAgent to warp
         if (charTransform.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent))
         {
             agent.enabled = false; 
             agent.Warp(spawnTransform.position);
         }
 
-        // 2. Kill all Rigidbody momentum
         if (charTransform.TryGetComponent<Rigidbody>(out var rb))
         {
             rb.position = spawnTransform.position;
@@ -291,7 +315,6 @@ public class GameManager : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
-        // 3. Set standard transform
         charTransform.position = spawnTransform.position;
         charTransform.rotation = spawnTransform.rotation;
     }
