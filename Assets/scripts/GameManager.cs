@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public const float RoundLength = 30f;
+
     [Header("Testing Mode")]
     public bool enableTestMode = false;
     public int forceArenaIndex = 0; 
@@ -41,6 +43,9 @@ public class GameManager : MonoBehaviour
     public Transform hunterTransform;
     public Transform runnerTransform;
 
+    [Header("Environment")]
+    public SkyboxDayNightController skyboxController;
+
     [Header("Game Characters (NEW)")]
     public GameCharacter hunterCharacter;
     public GameCharacter runnerCharacter;
@@ -58,7 +63,7 @@ public class GameManager : MonoBehaviour
 
     private float totalTimePlayed = 0f;
     private int roundsCompleted = 0;
-    private float timer = 30f;
+    private float timer = RoundLength;
     private int lastTransitionFrame = -1;
 
     void Awake()
@@ -110,8 +115,10 @@ public class GameManager : MonoBehaviour
     private void StartRound()
     {
         isGameActive = true;
-        timer = 30f; 
+        timer = RoundLength;
         UpdateTimerText();
+
+        if (skyboxController != null) skyboxController.PlayEveningToNight(RoundLength);
 
         if (enableTestMode) roundText.text = "TESTING ARENA " + forceArenaIndex;
         else roundText.text = "Round " + currentRound + " / 5";
@@ -162,7 +169,7 @@ public class GameManager : MonoBehaviour
 
         isGameActive = false;
         
-        float timeSpentThisRound = 30f - timer;
+        float timeSpentThisRound = RoundLength - timer;
         totalTimePlayed += timeSpentThisRound;
         roundsCompleted++;
 
